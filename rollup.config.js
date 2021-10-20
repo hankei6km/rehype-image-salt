@@ -1,4 +1,6 @@
 import typescript from '@rollup/plugin-typescript'
+import commonjs from '@rollup/plugin-commonjs'
+import { nodeResolve } from '@rollup/plugin-node-resolve'
 
 export default {
   input: './src/index.ts',
@@ -6,6 +8,5 @@ export default {
     file: './dist/index.cjs',
     format: 'cjs'
   },
-  plugins: [typescript()],
-  external: ['parse5', 'hast-util-from-parse5', 'unist-util-visit-parents']
+  plugins: [typescript(), nodeResolve(), commonjs()]
 }

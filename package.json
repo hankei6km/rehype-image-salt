@@ -1,5 +1,5 @@
 {
-  "name": "my-starter-ts-npm-cli-and-lib",
+  "name": "@hankei6km/rehype-image-salt",
   "version": "0.1.1-pre.0",
   "description": "Rebuild img tag using attributes embedded in alt",
   "author": "hankei6km <hankei6km@gmail.com> (https://github.com/hankei6km)",

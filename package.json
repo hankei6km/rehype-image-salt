@@ -15,8 +15,11 @@
     "rehype",
     "image"
   ],
-  "main": "dist/index.js",
-  "exports": "./dist/index.js",
+  "main": "dist/cjs/index.cjs",
+  "exports": {
+    "import": "./dist/index.js",
+    "require": "./dist/cjs/index.cjs"
+  },
   "type": "module",
   "types": "dist/index.d.ts",
   "files": [
@@ -30,7 +33,7 @@
   },
   "scripts": {
     "start": "npm run build && node dist/main.js",
-    "build": "npm run clean && tsc && rimraf dist/test && mv dist/src/* dist/ && rimraf dist/src",
+    "build": "npm run clean && tsc && rimraf dist/test && mv dist/src/* dist/ && rimraf dist/src && tsc -m commonjs && mv dist/src/index.js dist/src/index.cjs && mv dist/src dist/cjs && rimraf dist/test",
     "test": "node --experimental-vm-modules node_modules/.bin/jest",
     "clean": "rimraf \"dist/*\"",
     "upgrade-interactive": "npm-check --update",

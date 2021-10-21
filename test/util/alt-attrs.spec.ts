@@ -1,4 +1,4 @@
-import { attrs } from '../../src/util/alt-attrs.js'
+import { attrs, salt } from '../../src/util/alt-attrs.js'
 
 describe('attrs()', () => {
   it('should extract attrs', async () => {
@@ -80,5 +80,68 @@ describe('attrs()', () => {
         'abc#d:300x200 class="light-img" sizes="sm:100vw md:50vw lg:400px" >#'
       )
     ).toThrowError('extractAttrs: invalid attrs has injected')
+  })
+})
+
+describe('salt()', () => {
+  it('should embed attr to alt', async () => {
+    expect(
+      salt(
+        {
+          source: 'river',
+          extracted: false,
+          surrounded: ['', ''],
+          start: '',
+          attrs: '',
+          end: ''
+        },
+        { class: 'light-img' }
+      )
+    ).toEqual('river#class="light-img"#')
+  })
+  it('should embed "clasName:[]" as "class:string"', async () => {
+    expect(
+      salt(
+        {
+          source: 'river',
+          extracted: false,
+          surrounded: ['', ''],
+          start: '',
+          attrs: '',
+          end: ''
+        },
+        { className: ['light-img', 'w-full'] }
+      )
+    ).toEqual('river#class="light-img w-full"#')
+  })
+  it('should drop undefined', async () => {
+    expect(
+      salt(
+        {
+          source: 'river',
+          extracted: false,
+          surrounded: ['', ''],
+          start: '',
+          attrs: '',
+          end: ''
+        },
+        { class: ['light-img'], name: undefined }
+      )
+    ).toEqual('river#class="light-img"#')
+  })
+  it('should replace embedded', async () => {
+    expect(
+      salt(
+        {
+          source: 'river#class="light-img"# side',
+          extracted: true,
+          surrounded: ['#', '#'],
+          start: 'river',
+          attrs: 'class="light-img"',
+          end: ' side'
+        },
+        { class: ['light-img'], width: '300', height: '200' }
+      )
+    ).toEqual('river#class="light-img" width="300" height="200"# side')
   })
 })

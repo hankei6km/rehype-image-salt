@@ -3,6 +3,7 @@ import { fromParse5 } from 'hast-util-from-parse5'
 import { Element } from 'hast'
 import { Node } from 'unist'
 import { Properties } from 'hast'
+import { toHtml } from 'hast-util-to-html'
 
 export type ExtractAttrs = {
   source: string
@@ -40,6 +41,38 @@ export function decodeAttrs(s: string): Properties {
   }
   throw new Error('extractAttrs: invalid attrs has injected')
   //throw new Error(`extractAttrs: invalid attrs has injected: ${s}`)
+}
+
+const stripTagRegExp = /^<dummy (.[^>]+)><\/dummy>/
+export function encodeAttrs(properties: Properties): string {
+  const dummy: Element = {
+    type: 'element',
+    tagName: 'dummy',
+    children: [],
+    properties
+  }
+  const h = toHtml(dummy)
+  const m = h.match(stripTagRegExp)
+  if (m) {
+    return m[1] || ''
+  }
+  return ''
+}
+
+export function editAttrs(
+  attrs: Properties,
+  s: Properties,
+  replace?: boolean
+): Properties {
+  const ret: Properties = {}
+  Object.entries(s).forEach(([k, v]) => {
+    if (attrs[k] === undefined || replace) {
+      ret[k] = s[k]
+    } else {
+      ret[k] = attrs[k]
+    }
+  })
+  return ret
 }
 
 const extractRegExp = /(^[^#]*)#([^#]+)#(.*$)/
@@ -86,4 +119,12 @@ export function attrs(alt: string): AttrsResult {
     }
   }
   return { alt }
+}
+
+export function salt(ex: ExtractAttrs, propertiess: Properties): string {
+  const alt = encodeAttrs(propertiess)
+  if (ex.extracted) {
+    return `${ex.start}${ex.surrounded[0]}${alt}${ex.surrounded[1]}${ex.end}`
+  }
+  return `${ex.source}#${alt}#${ex.end}`
 }

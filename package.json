@@ -32,8 +32,10 @@
     "count": "dist/main.js"
   },
   "scripts": {
-    "start": "npm run build && node dist/main.js",
-    "build": "npm run clean && tsc && rimraf dist/test && mv dist/src/* dist/ && rimraf dist/src && rollup -c rollup.config.js",
+    "start": "npm run clean && npm run build:esm && node dist/main.js",
+    "build:esm": "tsc && rimraf dist/test && mv dist/src/* dist/ && rimraf dist/src",
+    "build:cjs": "rollup -c rollup.config.js",
+    "build": "npm run clean && npm run build:esm && npm run cjs",
     "test": "node --experimental-vm-modules node_modules/.bin/jest",
     "clean": "rimraf \"dist/*\"",
     "upgrade-interactive": "npm-check --update",

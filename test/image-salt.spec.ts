@@ -48,7 +48,7 @@ describe('rehypeImageSalt', () => {
     expect(
       await f(
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1"></p>',
-        { tagName: 'nuxt-img' }
+        { rebuild: { tagName: 'nuxt-img' } }
       )
     ).toEqual(
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><nuxt-img src="/path/to/image1.jpg" alt="image1"></nuxt-img></p>'
@@ -58,7 +58,7 @@ describe('rehypeImageSalt', () => {
     expect(
       await f(
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1#modifiers=&#x22;blur=100&#x22;#"></p>',
-        { tagName: 'nuxt-img' }
+        { rebuild: { tagName: 'nuxt-img' } }
       )
     ).toEqual(
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><nuxt-img src="/path/to/image1.jpg" alt="image1" :modifiers="{&#x22;blur&#x22;:&#x22;100&#x22;}"></nuxt-img></p>'
@@ -87,7 +87,8 @@ describe('rehypeImageSalt', () => {
       await f(
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1#class=&#x22;light-img&#x22;#"></p>',
         {
-          baseURL: 'https://localhost:3000/'
+          baseURL: 'https://localhost:3000/',
+          rebuild: {}
         }
       )
     ).toEqual(
@@ -99,7 +100,8 @@ describe('rehypeImageSalt', () => {
       await f(
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1#class=&#x22;light-img&#x22;#"></p><h2>test2</h2><p>image-salt-2</p><p><img src="https://localhost:3001/path/to/image2.jpg" alt="image2#class=&#x22;light-img&#x22;#"></p>',
         {
-          baseURL: 'https://localhost:3000/'
+          baseURL: 'https://localhost:3000/',
+          rebuild: {}
         }
       )
     ).toEqual(
@@ -112,7 +114,9 @@ describe('rehypeImageSalt', () => {
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1#class=&#x22;light-img&#x22;#"></p>',
         {
           baseURL: 'https://localhost:3000/',
-          keepBaseURL: true
+          rebuild: {
+            keepBaseURL: true
+          }
         }
       )
     ).toEqual(
@@ -124,8 +128,10 @@ describe('rehypeImageSalt', () => {
       await f(
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1#modifiers=&#x22;blur=100&#x22;#"></p>',
         {
-          tagName: 'nuxt-img',
-          baseAttrs: 'provider="imgix"'
+          rebuild: {
+            tagName: 'nuxt-img',
+            baseAttrs: 'provider="imgix"'
+          }
         }
       )
     ).toEqual(
@@ -137,8 +143,10 @@ describe('rehypeImageSalt', () => {
       await f(
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1#class=&#x22;dark-img&#x22; modifiers=&#x22;blur=100&#x22;#"></p>',
         {
-          tagName: 'nuxt-img',
-          baseAttrs: 'provider="imgix" class="light-img"'
+          rebuild: {
+            tagName: 'nuxt-img',
+            baseAttrs: 'provider="imgix" class="light-img"'
+          }
         }
       )
     ).toEqual(

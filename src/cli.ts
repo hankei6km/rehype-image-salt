@@ -19,7 +19,12 @@ const cli = async (opts: Opts): Promise<number> => {
     })
     const m = await unified()
       .use(rehypeParse, { fragment: true })
-      .use(rehypeImageSalt, { ...imageSaltOpts })
+      .use(rehypeImageSalt, {
+        ...imageSaltOpts,
+        rebuild: {
+          ...imageSaltOpts.rebuild
+        }
+      })
       .use(stringify)
       .freeze()
       .process(source)

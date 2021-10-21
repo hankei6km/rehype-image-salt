@@ -28,7 +28,8 @@ describe('cli()', () => {
 
     expect(
       await cli({
-        ...io
+        ...io,
+        rebuild: {}
       })
     ).toEqual(0)
     expect(outData).toMatchSnapshot()
@@ -49,7 +50,8 @@ describe('cli()', () => {
     expect(
       await cli({
         ...io,
-        baseURL: 'https://localhost:3000/'
+        baseURL: 'https://localhost:3000/',
+        rebuild: {}
       })
     ).toEqual(0)
     expect(outData).toMatchSnapshot()
@@ -71,7 +73,9 @@ describe('cli()', () => {
       await cli({
         ...io,
         baseURL: 'https://localhost:3000/',
-        keepBaseURL: true
+        rebuild: {
+          keepBaseURL: true
+        }
       })
     ).toEqual(0)
     expect(outData).toMatchSnapshot()
@@ -93,8 +97,10 @@ describe('cli()', () => {
       await cli({
         ...io,
         baseURL: 'https://localhost:3000/',
-        keepBaseURL: true,
-        baseAttrs: 'provider="imgix" class="light-img"'
+        rebuild: {
+          keepBaseURL: true,
+          baseAttrs: 'provider="imgix" class="light-img"'
+        }
       })
     ).toEqual(0)
     expect(outData).toMatchSnapshot()
@@ -115,10 +121,12 @@ describe('cli()', () => {
     expect(
       await cli({
         ...io,
-        tagName: '',
         baseURL: '',
-        keepBaseURL: false,
-        baseAttrs: ''
+        rebuild: {
+          tagName: '',
+          keepBaseURL: false,
+          baseAttrs: ''
+        }
       })
     ).toEqual(1)
     expect(outData).toEqual('')

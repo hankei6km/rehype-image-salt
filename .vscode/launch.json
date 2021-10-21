@@ -5,6 +5,24 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "start rebuild",
+            "request": "launch",
+            "runtimeArgs": [
+                "run-script",
+                "start",
+                "---",
+                "rebuild"
+            ],
+            "runtimeExecutable": "npm",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "pwa-node",
+            "envFile": "${workspaceFolder}/.env.debug",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
             "name": "unit test",
             "request": "launch",
             "runtimeArgs": [

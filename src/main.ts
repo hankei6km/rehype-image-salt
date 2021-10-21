@@ -6,43 +6,57 @@ import cli from './cli.js'
 // coverage が top-level await になる
 ;(async () => {
   const argv = await yargs(hideBin(process.argv))
-    .scriptName('image-salt')
-    .env('IMAGE_SALT')
-    .usage('$0 [OPTION]... --')
-    .example('cat foo.md | $0', 'generate img tag by Image node in markdown')
+    .scriptName('rehype-image-salt')
+    .env('REHYPE_IMAGE_SALT')
+    .usage('$0 [OPTION]...')
+    .example(
+      'cat foo.html | $0 rebuild',
+      'Rebuild img tag using attributes embedded in alt'
+    )
+    .command(
+      'rebuild [OPTIONS]...',
+      'Rebuild img tag using attributes embedded in alt',
+      (yargs) => {
+        return yargs.options({
+          'tag-name': {
+            type: 'string',
+            required: false,
+            description: 'tag name to rebuild img tag'
+          },
+          'keep-base-url': {
+            type: 'boolean',
+            required: false,
+            description: 'keep baseURL in src of image'
+          },
+          'base-attrs': {
+            type: 'string',
+            required: false,
+            description: 'base attrs to set tag generated'
+          }
+        })
+      }
+    )
     .options({
-      'tag-name': {
-        type: 'string',
-        required: false,
-        description: 'a Tag name to use generated tag'
-      },
       'base-url': {
         type: 'string',
         required: false,
         description: 'select image node'
-      },
-      'keep-base-url': {
-        type: 'boolean',
-        required: false,
-        description: 'keep baseURL in src of image'
-      },
-      'base-attrs': {
-        type: 'string',
-        required: false,
-        description: 'base attrs to set tag generated'
       }
     })
     .help().argv
 
   process.exit(
     await cli({
+      command: `${argv._[0]}` as 'rebuild' | undefined,
       stdin: process.stdin,
       stdout: process.stdout,
       stderr: process.stderr,
-      tagName: argv['tag-name'],
       baseURL: argv['base-url'],
-      keepBaseURL: argv['keep-base-url'],
-      baseAttrs: argv['base-attrs']
+      rebuild: {
+        tagName: argv['tag-name'],
+        keepBaseURL: argv['keep-base-url'],
+        baseAttrs: argv['base-attrs']
+      }
     })
   )
 })()

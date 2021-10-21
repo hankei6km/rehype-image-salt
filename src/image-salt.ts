@@ -8,25 +8,25 @@ import { attrs, decodeAttrs } from './alt-attrs.js'
 import { editQuery, toModifiers } from './query.js'
 import { trimBaseURL } from './util.js'
 
-export type RemarkImageSaltOptions = {
+export type RehypeImageSaltOptions = {
   tagName?: string
   baseURL?: string
   keepBaseURL?: boolean
   baseAttrs?: string
 }
-const defaultOpts: Required<RemarkImageSaltOptions> = {
+const defaultOpts: Required<RehypeImageSaltOptions> = {
   tagName: 'img',
   baseURL: '',
   keepBaseURL: false,
   baseAttrs: ''
 }
 
-export const remarkImageSalt: Plugin = function remarkImageSalt({
+export const rehypeImageSalt: Plugin = function rehypeImageSalt({
   tagName: inTagName,
   baseURL: inBaseURL,
   keepBaseURL: inKeepBaseURL,
   baseAttrs: inBaseAttrs
-}: RemarkImageSaltOptions = defaultOpts): Transformer {
+}: RehypeImageSaltOptions = defaultOpts): Transformer {
   const { tagName, baseURL, keepBaseURL, baseAttrs }: typeof defaultOpts = {
     tagName: inTagName !== undefined ? inTagName : defaultOpts.tagName,
     baseURL: inBaseURL !== undefined ? inBaseURL : defaultOpts.baseURL,

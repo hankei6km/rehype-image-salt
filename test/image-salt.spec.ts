@@ -1,16 +1,16 @@
 import { unified } from 'unified'
 import rehypeParse from 'rehype-parse'
 import stringify from 'rehype-stringify'
-import { remarkImageSalt, RemarkImageSaltOptions } from '../src/image-salt.js'
+import { rehypeImageSalt, RehypeImageSaltOptions } from '../src/image-salt.js'
 
-describe('remarkImageSalt', () => {
+describe('rehypeImageSalt', () => {
   const f = async (
     markdown: string,
-    opts?: RemarkImageSaltOptions
+    opts?: RehypeImageSaltOptions
   ): Promise<string> => {
     return await unified()
       .use(rehypeParse, { fragment: true })
-      .use(remarkImageSalt, opts)
+      .use(rehypeImageSalt, opts)
       .use(stringify, {})
       .freeze()
       .process(markdown)

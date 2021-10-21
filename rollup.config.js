@@ -7,6 +7,15 @@ export default {
   output: {
     file: './dist/index.cjs',
     format: 'cjs'
+    // exports: 'named'
   },
-  plugins: [typescript(), nodeResolve(), commonjs()]
+  plugins: [
+    typescript({
+      module: 'commonjs'
+    }),
+    nodeResolve(),
+    commonjs({
+      extensions: ['.js', '.ts']
+    })
+  ]
 }

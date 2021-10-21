@@ -1,5 +1,3 @@
-import { RehypeImageSaltOptions, rehypeImageSalt } from './image-salt.js'
-import { ExtractAttrs, decodeAttrs } from './alt-attrs.js'
+import { rehypeImageSalt } from './image-salt.js'
 
-export { RehypeImageSaltOptions, ExtractAttrs, decodeAttrs }
 export default rehypeImageSalt

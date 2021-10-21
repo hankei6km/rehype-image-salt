@@ -6,16 +6,16 @@ export default {
   input: './src/index.ts',
   output: {
     file: './dist/index.cjs',
-    format: 'cjs'
-    // exports: 'named'
+    format: 'cjs',
+    exports: 'default'
   },
   plugins: [
     typescript({
-      module: 'commonjs'
+      //module: 'commonjs'
     }),
     nodeResolve(),
     commonjs({
-      extensions: ['.js', '.ts']
+      // extensions: ['.js', '.ts']
     })
   ]
 }

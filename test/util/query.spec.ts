@@ -1,4 +1,4 @@
-import { decodeBase64Url, toModifiers } from '../src/query'
+import { decodeBase64Url, toModifiers } from '../../src/util/query.js'
 
 describe('decodeBase64Url()', () => {
   it('should decode base64 url string', async () => {

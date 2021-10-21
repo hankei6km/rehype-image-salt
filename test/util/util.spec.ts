@@ -1,4 +1,4 @@
-import { trimBaseURL } from '../src/util.js'
+import { trimBaseURL } from '../../src/util/util.js'
 
 describe('trimBaseURL()', () => {
   it('should trim url by baseURL', async () => {

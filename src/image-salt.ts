@@ -4,9 +4,9 @@ import { Node } from 'unist'
 import { Parent, Element, Properties } from 'hast'
 import { visitParents } from 'unist-util-visit-parents'
 import { toHtml } from 'hast-util-to-html'
-import { attrs, decodeAttrs } from './alt-attrs.js'
-import { editQuery, toModifiers } from './query.js'
-import { trimBaseURL } from './util.js'
+import { attrs, decodeAttrs } from './util/alt-attrs.js'
+import { editQuery, toModifiers } from './util/query.js'
+import { trimBaseURL } from './util/util.js'
 
 export type RehypeImageSaltOptions = {
   tagName?: string

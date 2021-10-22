@@ -14,7 +14,7 @@ describe('cli()', () => {
     io.stderr = new PassThrough()
   })
 
-  it('should return stdout with exitcode=0', async () => {
+  it('should return stdout from rebuild command with exitcode=0', async () => {
     let outData = ''
     io.stdout.on('data', (d) => (outData = outData + d))
     let errData = ''
@@ -99,6 +99,33 @@ describe('cli()', () => {
     expect(
       await cli({
         ...io,
+        baseURL: 'https://localhost:3000/',
+        rebuild: {
+          keepBaseURL: true,
+          baseAttrs: 'provider="imgix" class="light-img"'
+        },
+        embed: {}
+      })
+    ).toEqual(0)
+    expect(outData).toMatchSnapshot()
+    expect(errData).toEqual('')
+  })
+  it('should return stdout from embed command with exitcode=0', async () => {
+    let outData = ''
+    io.stdout.on('data', (d) => (outData = outData + d))
+    let errData = ''
+    io.stderr.on('data', (d) => (errData = errData + d))
+    process.nextTick(() => {
+      io.stdin.write(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1##class=&#x22;dark-img&#x22; modifiers=&#x22;blur=100&#x22;##" width="300" height="200"></p>'
+      )
+      io.stdin.end()
+    })
+
+    expect(
+      await cli({
+        ...io,
+        command: 'embed',
         baseURL: 'https://localhost:3000/',
         rebuild: {
           keepBaseURL: true,

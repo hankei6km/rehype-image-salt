@@ -205,6 +205,20 @@ describe('rehypeImageSalt embed', () => {
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1#width=&#x22;300&#x22; class=&#x22;light-img&#x22;#" width="300" height="200" class="light-img"></p>'
     )
   })
+  it('should add alt when alt does not exist', async () => {
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" width="300" height="200" class="light-img"></p>',
+        {
+          command: 'embed',
+          rebuild: {},
+          embed: { piackAttrs: ['width', 'class'] }
+        }
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="#width=&#x22;300&#x22; class=&#x22;light-img&#x22;#" width="300" height="200" class="light-img"></p>'
+    )
+  })
   it('should skip url that was not matched baseURL', async () => {
     expect(
       await f(

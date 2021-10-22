@@ -9,7 +9,7 @@ import {
   decodeAttrs,
   editAttrs,
   extractAttrs,
-  piackAttrs,
+  pickAttrs,
   salt
 } from './util/alt-attrs.js'
 import { editQuery, toModifiers } from './util/query.js'
@@ -21,7 +21,7 @@ type RehypeImageSaltOptionsRebuild = {
   baseAttrs?: string
 }
 type RehypeImageSaltOptionsEmbed = {
-  piackAttrs?: string[]
+  pickAttrs?: string[]
 }
 export type CommandNames = 'rebuild' | 'embed'
 export type RehypeImageSaltOptions = {
@@ -42,7 +42,7 @@ const defaultOpts: Required<RehypeImageSaltOptions> & {
     baseAttrs: ''
   },
   embed: {
-    piackAttrs: ['width', 'height']
+    pickAttrs: ['width', 'height']
   }
 }
 
@@ -72,10 +72,10 @@ export const rehypeImageSalt: Plugin<
         : defaultOpts.rebuild.baseAttrs
   }
   const embedOpts: Required<RehypeImageSaltOptionsEmbed> = {
-    piackAttrs:
-      opts.embed?.piackAttrs !== undefined
-        ? opts.embed.piackAttrs
-        : defaultOpts.embed.piackAttrs
+    pickAttrs:
+      opts.embed?.pickAttrs !== undefined
+        ? opts.embed.pickAttrs
+        : defaultOpts.embed.pickAttrs
   }
 
   const baseProperties = rebuildOpts.baseAttrs
@@ -185,7 +185,7 @@ export const rehypeImageSalt: Plugin<
       const imageProperties = image.properties || {}
 
       const ra = imageAlt ? attrs(imageAlt) : { alt: '' }
-      const picked = piackAttrs(imageProperties, embedOpts.piackAttrs)
+      const picked = pickAttrs(imageProperties, embedOpts.pickAttrs)
 
       const { src: imageURL, alt: _alt, ...others } = imageProperties
       const imageTag: Element = {

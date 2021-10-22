@@ -73,7 +73,7 @@ import { CommandNames } from './image-salt.js'
         baseAttrs: argv['base-attrs']
       },
       embed: {
-        piackAttrs: argv['pick-attrs']
+        pickAttrs: argv['pick-attrs']
       }
     })
   )

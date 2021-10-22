@@ -76,7 +76,7 @@ export function editAttrs(
   return ret
 }
 
-export function piackAttrs(attrs: Properties, pick: string[]): Properties {
+export function pickAttrs(attrs: Properties, pick: string[]): Properties {
   const { src: _src, alt: _alt, className, ...others } = attrs
   const ret: Properties = {}
   Object.entries(attrs)

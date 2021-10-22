@@ -5,6 +5,9 @@ import { Node } from 'unist'
 import { Properties } from 'hast'
 import { toHtml } from 'hast-util-to-html'
 
+// const fenceStart = '##'
+// const fenceEnd = '##'
+
 export type ExtractAttrs = {
   source: string
   extracted: boolean
@@ -85,14 +88,14 @@ export function piackAttrs(attrs: Properties, pick: string[]): Properties {
   return ret
 }
 
-const extractRegExp = /(^[^#]*)#([^#]+)#(.*$)/
+const extractRegExp = /(^[^#]*)##([^#]+)##(.*$)/
 export function extractAttrs(alt: string): ExtractAttrs {
   const s = alt.match(extractRegExp)
   if (s) {
     return {
       source: alt,
       extracted: true,
-      surrounded: ['#', '#'],
+      surrounded: ['##', '##'],
       start: s[1],
       attrs: s[2],
       end: s[3]
@@ -137,7 +140,7 @@ export function salt(ex: ExtractAttrs, propertiess: Properties): string {
     if (ex.extracted) {
       return `${ex.start}${ex.surrounded[0]}${alt}${ex.surrounded[1]}${ex.end}`
     }
-    return `${ex.source}#${alt}#`
+    return `${ex.source}##${alt}##`
   }
   return ex.source
 }

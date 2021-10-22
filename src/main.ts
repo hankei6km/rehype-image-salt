@@ -4,6 +4,7 @@ import { hideBin } from 'yargs/helpers'
 import cli from './cli.js'
 
 // coverage が top-level await になる
+import { CommandNames } from './image-salt.js'
 ;(async () => {
   const argv = await yargs(hideBin(process.argv))
     .scriptName('rehype-image-salt')
@@ -36,6 +37,20 @@ import cli from './cli.js'
         })
       }
     )
+    .command(
+      'embed [OPTIONS]...',
+      'Embed img tag attributes into alt',
+      (yargs) => {
+        return yargs.options({
+          'pick-attrs': {
+            type: 'string',
+            array: true,
+            required: false,
+            description: 'pick attrs to embed to alt'
+          }
+        })
+      }
+    )
     .options({
       'base-url': {
         type: 'string',
@@ -47,7 +62,7 @@ import cli from './cli.js'
 
   process.exit(
     await cli({
-      command: `${argv._[0]}` as 'rebuild' | undefined,
+      command: `${argv._[0]}` as CommandNames | undefined,
       stdin: process.stdin,
       stdout: process.stdout,
       stderr: process.stderr,
@@ -56,6 +71,9 @@ import cli from './cli.js'
         tagName: argv['tag-name'],
         keepBaseURL: argv['keep-base-url'],
         baseAttrs: argv['base-attrs']
+      },
+      embed: {
+        piackAttrs: argv['pick-attrs']
       }
     })
   )

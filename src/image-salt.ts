@@ -4,7 +4,14 @@ import { Node } from 'unist'
 import { Parent, Element, Properties } from 'hast'
 import { visitParents } from 'unist-util-visit-parents'
 import { toHtml } from 'hast-util-to-html'
-import { attrs, decodeAttrs } from './util/alt-attrs.js'
+import {
+  attrs,
+  decodeAttrs,
+  editAttrs,
+  extractAttrs,
+  piackAttrs,
+  salt
+} from './util/alt-attrs.js'
 import { editQuery, toModifiers } from './util/query.js'
 import { trimBaseURL } from './util/util.js'
 
@@ -13,13 +20,19 @@ type RehypeImageSaltOptionsRebuild = {
   keepBaseURL?: boolean
   baseAttrs?: string
 }
+type RehypeImageSaltOptionsEmbed = {
+  piackAttrs?: string[]
+}
+export type CommandNames = 'rebuild' | 'embed'
 export type RehypeImageSaltOptions = {
-  command?: 'rebuild'
+  command?: CommandNames
   baseURL?: string
   rebuild: RehypeImageSaltOptionsRebuild
+  embed: RehypeImageSaltOptionsEmbed
 }
 const defaultOpts: Required<RehypeImageSaltOptions> & {
   rebuild: Required<RehypeImageSaltOptionsRebuild>
+  embed: Required<RehypeImageSaltOptionsEmbed>
 } = {
   command: 'rebuild',
   baseURL: '',
@@ -27,6 +40,9 @@ const defaultOpts: Required<RehypeImageSaltOptions> & {
     tagName: 'img',
     keepBaseURL: false,
     baseAttrs: ''
+  },
+  embed: {
+    piackAttrs: ['width', 'height']
   }
 }
 
@@ -37,7 +53,7 @@ export const rehypeImageSalt: Plugin = function rehypeImageSalt(
     opts.command !== undefined ? opts.command : defaultOpts.command
   const baseURL =
     opts.baseURL !== undefined ? opts.baseURL : defaultOpts.baseURL
-  const rebuild: Required<RehypeImageSaltOptionsRebuild> = {
+  const rebuildOpts: Required<RehypeImageSaltOptionsRebuild> = {
     tagName:
       opts.rebuild.tagName !== undefined
         ? opts.rebuild.tagName
@@ -51,9 +67,15 @@ export const rehypeImageSalt: Plugin = function rehypeImageSalt(
         ? opts.rebuild.baseAttrs
         : defaultOpts.rebuild.baseAttrs
   }
+  const embedOpts: Required<RehypeImageSaltOptionsEmbed> = {
+    piackAttrs:
+      opts.embed.piackAttrs !== undefined
+        ? opts.embed.piackAttrs
+        : defaultOpts.embed.piackAttrs
+  }
 
-  const baseProperties = rebuild.baseAttrs
-    ? decodeAttrs(`${rebuild.baseAttrs}`)
+  const baseProperties = rebuildOpts.baseAttrs
+    ? decodeAttrs(`${rebuildOpts.baseAttrs}`)
     : {}
 
   const visitTest = (node: Node) => {
@@ -112,13 +134,13 @@ export const rehypeImageSalt: Plugin = function rehypeImageSalt(
           properties[key] = value
         }
       })
-      if (!rebuild.keepBaseURL) {
+      if (!rebuildOpts.keepBaseURL) {
         imageURL = trimBaseURL(baseURL, imageURL)
       }
 
       const imageTag: Element = {
         type: 'element',
-        tagName: rebuild.tagName,
+        tagName: rebuildOpts.tagName,
         properties: {
           src: imageURL,
           alt: ex.alt,
@@ -144,12 +166,47 @@ export const rehypeImageSalt: Plugin = function rehypeImageSalt(
     }
   }
 
+  const visitorEmbed = (node: Node, parents: Parent[]) => {
+    const parentsLen = parents.length
+    const parent: Parent = parents[parentsLen - 1]
+    const imageIdx = parent.children.findIndex((n) => n === node)
+    const image: Element = node as Element
+
+    if (
+      typeof image.properties?.src === 'string' &&
+      image.properties.src.startsWith(baseURL)
+    ) {
+      const imageAlt =
+        typeof image.properties?.alt === 'string' ? image.properties?.alt : ''
+      const imageProperties = image.properties || {}
+
+      const ra = imageAlt ? attrs(imageAlt) : { alt: '' }
+      const picked = piackAttrs(image.properties || {}, embedOpts.piackAttrs)
+
+      const { src: imageURL, alt: _alt, ...others } = image.properties || {}
+      const imageTag: Element = {
+        type: 'element',
+        tagName: rebuildOpts.tagName,
+        properties: {
+          src: imageURL,
+          alt: salt(extractAttrs(imageAlt), editAttrs(imageProperties, picked)),
+          ...others
+        },
+        children: []
+      }
+      let rebuilded: Element = imageTag
+      parent.children[imageIdx] = rebuilded
+    }
+  }
+
   let visitor: (node: Node, parents: Parent[]) => void = (
     node: Node,
     parents: Parent[]
   ) => {}
   if (command === 'rebuild') {
     visitor = visitorRebuild
+  } else if (command === 'embed') {
+    visitor = visitorEmbed
   }
 
   return function transformer(tree: Node): void {

@@ -75,6 +75,18 @@ export function editAttrs(
   return ret
 }
 
+export function piackAttrs(attrs: Properties, pick: string[]): Properties {
+  const { src: _src, alt: _alt, className, ...others } = attrs
+  const ret: Properties = {}
+  Object.entries(attrs)
+    .filter(([k]) => pick.includes(k))
+    .forEach(([k, v]) => (ret[k] = v))
+  if (pick.includes('class')) {
+    ret.className = className
+  }
+  return ret
+}
+
 const extractRegExp = /(^[^#]*)#([^#]+)#(.*$)/
 export function extractAttrs(alt: string): ExtractAttrs {
   const s = alt.match(extractRegExp)
@@ -123,8 +135,11 @@ export function attrs(alt: string): AttrsResult {
 
 export function salt(ex: ExtractAttrs, propertiess: Properties): string {
   const alt = encodeAttrs(propertiess)
-  if (ex.extracted) {
-    return `${ex.start}${ex.surrounded[0]}${alt}${ex.surrounded[1]}${ex.end}`
+  if (alt) {
+    if (ex.extracted) {
+      return `${ex.start}${ex.surrounded[0]}${alt}${ex.surrounded[1]}${ex.end}`
+    }
+    return `${ex.source}#${alt}#`
   }
-  return `${ex.source}#${alt}#${ex.end}`
+  return ex.source
 }

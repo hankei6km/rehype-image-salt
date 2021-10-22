@@ -3,27 +3,27 @@ import rehypeParse from 'rehype-parse'
 import stringify from 'rehype-stringify'
 import { rehypeImageSalt, RehypeImageSaltOptions } from '../src/image-salt.js'
 
-describe('rehypeImageSalt', () => {
-  const f = async (
-    markdown: string,
-    opts?: RehypeImageSaltOptions
-  ): Promise<string> => {
-    return await unified()
-      .use(rehypeParse, { fragment: true })
-      .use(rehypeImageSalt, opts)
-      .use(stringify, {})
-      .freeze()
-      .process(markdown)
-      .then(
-        (file) => {
-          return String(file)
-        },
-        (error) => {
-          throw error
-        }
-      )
-  }
+const f = async (
+  markdown: string,
+  opts?: RehypeImageSaltOptions
+): Promise<string> => {
+  return await unified()
+    .use(rehypeParse, { fragment: true })
+    .use(rehypeImageSalt, opts)
+    .use(stringify, {})
+    .freeze()
+    .process(markdown)
+    .then(
+      (file) => {
+        return String(file)
+      },
+      (error) => {
+        throw error
+      }
+    )
+}
 
+describe('rehypeImageSalt rebuild', () => {
   // attrs がこの順番で出力されるとは限らない.
   // 変化するようならユーティリティを利用.
   it('should rebuild img tag', async () => {
@@ -48,7 +48,7 @@ describe('rehypeImageSalt', () => {
     expect(
       await f(
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1"></p>',
-        { rebuild: { tagName: 'nuxt-img' } }
+        { rebuild: { tagName: 'nuxt-img' }, embed: {} }
       )
     ).toEqual(
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><nuxt-img src="/path/to/image1.jpg" alt="image1"></nuxt-img></p>'
@@ -58,7 +58,7 @@ describe('rehypeImageSalt', () => {
     expect(
       await f(
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1#modifiers=&#x22;blur=100&#x22;#"></p>',
-        { rebuild: { tagName: 'nuxt-img' } }
+        { rebuild: { tagName: 'nuxt-img' }, embed: {} }
       )
     ).toEqual(
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><nuxt-img src="/path/to/image1.jpg" alt="image1" :modifiers="{&#x22;blur&#x22;:&#x22;100&#x22;}"></nuxt-img></p>'
@@ -88,7 +88,8 @@ describe('rehypeImageSalt', () => {
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1#class=&#x22;light-img&#x22;#"></p>',
         {
           baseURL: 'https://localhost:3000/',
-          rebuild: {}
+          rebuild: {},
+          embed: {}
         }
       )
     ).toEqual(
@@ -101,7 +102,8 @@ describe('rehypeImageSalt', () => {
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1#class=&#x22;light-img&#x22;#"></p><h2>test2</h2><p>image-salt-2</p><p><img src="https://localhost:3001/path/to/image2.jpg" alt="image2#class=&#x22;light-img&#x22;#"></p>',
         {
           baseURL: 'https://localhost:3000/',
-          rebuild: {}
+          rebuild: {},
+          embed: {}
         }
       )
     ).toEqual(
@@ -116,7 +118,8 @@ describe('rehypeImageSalt', () => {
           baseURL: 'https://localhost:3000/',
           rebuild: {
             keepBaseURL: true
-          }
+          },
+          embed: {}
         }
       )
     ).toEqual(
@@ -131,7 +134,8 @@ describe('rehypeImageSalt', () => {
           rebuild: {
             tagName: 'nuxt-img',
             baseAttrs: 'provider="imgix"'
-          }
+          },
+          embed: {}
         }
       )
     ).toEqual(
@@ -146,7 +150,8 @@ describe('rehypeImageSalt', () => {
           rebuild: {
             tagName: 'nuxt-img',
             baseAttrs: 'provider="imgix" class="light-img"'
-          }
+          },
+          embed: {}
         }
       )
     ).toEqual(
@@ -169,6 +174,50 @@ describe('rehypeImageSalt', () => {
       )
     ).toEqual(
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="/path/to/image1.jpg?w=600" target="_blank" rel="noopener noreferrer"><img src="/path/to/image1.jpg?w=300&#x26;h=200" alt="image1"></a></p>'
+    )
+  })
+})
+
+describe('rehypeImageSalt embed', () => {
+  // attrs がこの順番で出力されるとは限らない.
+  // 変化するようならユーティリティを利用.
+  it('should embed attrs to img tag', async () => {
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="300" height="200"></p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt=""></p>',
+        { command: 'embed', rebuild: {}, embed: {} }
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1#width=&#x22;300&#x22; height=&#x22;200&#x22;#" width="300" height="200"></p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt=""></p>'
+    )
+  })
+  it('should pick attrs to embed', async () => {
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="300" height="200" class="light-img"></p>',
+        {
+          command: 'embed',
+          rebuild: {},
+          embed: { piackAttrs: ['width', 'class'] }
+        }
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1#width=&#x22;300&#x22; class=&#x22;light-img&#x22;#" width="300" height="200" class="light-img"></p>'
+    )
+  })
+  it('should skip url that was not matched baseURL', async () => {
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1" width="300" height="200"></p><h2>test2</h2><p>image-salt-2</p><p><img src="https://localhost:3001/path/to/image2.jpg" alt="image2" width="300" height="200"></p>',
+        {
+          command: 'embed',
+          baseURL: 'https://localhost:3000/',
+          rebuild: {},
+          embed: {}
+        }
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1#width=&#x22;300&#x22; height=&#x22;200&#x22;#" width="300" height="200"></p><h2>test2</h2><p>image-salt-2</p><p><img src="https://localhost:3001/path/to/image2.jpg" alt="image2" width="300" height="200"></p>'
     )
   })
 })

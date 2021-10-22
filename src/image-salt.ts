@@ -1,16 +1,17 @@
 import { Plugin, Transformer } from 'unified'
 import { Node } from 'unist'
 // import { Parent, Image, HTML } from 'mdast'
-import { Root, Parent, Element, Properties } from 'hast'
+import { Root, Parent, Element, Properties, Text } from 'hast'
 import { visitParents } from 'unist-util-visit-parents'
 import { toHtml } from 'hast-util-to-html'
 import {
   attrs,
   decodeAttrs,
   editAttrs,
-  extractAttrs,
+  extractAttrsFromAlt,
   pickAttrs,
-  salt
+  salt,
+  sblock
 } from './util/alt-attrs.js'
 import { editQuery, toModifiers } from './util/query.js'
 import { trimBaseURL } from './util/util.js'
@@ -20,7 +21,9 @@ type RehypeImageSaltOptionsRebuild = {
   keepBaseURL?: boolean
   baseAttrs?: string
 }
+export type EmbedTo = 'alt' | 'block'
 type RehypeImageSaltOptionsEmbed = {
+  embedTo?: EmbedTo
   pickAttrs?: string[]
 }
 export type CommandNames = 'rebuild' | 'embed'
@@ -42,6 +45,7 @@ const defaultOpts: Required<RehypeImageSaltOptions> & {
     baseAttrs: ''
   },
   embed: {
+    embedTo: 'alt',
     pickAttrs: ['width', 'height']
   }
 }
@@ -72,6 +76,10 @@ export const rehypeImageSalt: Plugin<
         : defaultOpts.rebuild.baseAttrs
   }
   const embedOpts: Required<RehypeImageSaltOptionsEmbed> = {
+    embedTo:
+      opts.embed?.embedTo !== undefined
+        ? opts.embed.embedTo
+        : defaultOpts.embed.embedTo,
     pickAttrs:
       opts.embed?.pickAttrs !== undefined
         ? opts.embed.pickAttrs
@@ -94,20 +102,24 @@ export const rehypeImageSalt: Plugin<
     const parent: Parent = parents[parentsLen - 1]
     const imageIdx = parent.children.findIndex((n) => n === node)
     const image: Element = node as Element
+    const text: Text | undefined =
+      parent.children[imageIdx + 1]?.type === 'text'
+        ? (parent.children[imageIdx + 1] as Text)
+        : undefined
 
     if (
       typeof image.properties?.src === 'string' &&
       image.properties.src.startsWith(baseURL)
     ) {
+      const imageAlt =
+        typeof image.properties?.alt === 'string' ? image.properties?.alt : ''
+      const blockText = text?.value || ''
       let imageURL = image.properties.src
       let largeImageURL = ''
 
-      const ex =
-        typeof image.properties?.alt === 'string'
-          ? attrs(image.properties?.alt)
-          : { alt: '' }
+      const ra = attrs(imageAlt, blockText)
       const workProperties: Properties = {}
-      Object.assign(workProperties, baseProperties, ex.properties || {})
+      Object.assign(workProperties, baseProperties, ra.properties || {})
       const {
         src: _src,
         alt: _alt,
@@ -147,7 +159,7 @@ export const rehypeImageSalt: Plugin<
         tagName: rebuildOpts.tagName,
         properties: {
           src: imageURL,
-          alt: ex.alt,
+          alt: ra.alt,
           ...properties
         },
         children: []
@@ -166,6 +178,9 @@ export const rehypeImageSalt: Plugin<
         }
         rebuilded = largeImageTag
       }
+      if (ra.removeBlock) {
+        parent.children.splice(imageIdx + 1, 1)
+      }
       parent.children[imageIdx] = rebuilded
     }
   }
@@ -175,6 +190,10 @@ export const rehypeImageSalt: Plugin<
     const parent: Parent = parents[parentsLen - 1]
     const imageIdx = parent.children.findIndex((n) => n === node)
     const image: Element = node as Element
+    const text: Text | undefined =
+      parent.children[imageIdx + 1]?.type === 'text'
+        ? (parent.children[imageIdx + 1] as Text)
+        : undefined
 
     if (
       typeof image.properties?.src === 'string' &&
@@ -183,26 +202,43 @@ export const rehypeImageSalt: Plugin<
       const imageAlt =
         typeof image.properties?.alt === 'string' ? image.properties?.alt : ''
       const imageProperties = image.properties || {}
+      const blockText = text?.value || ''
 
-      const ra = imageAlt ? attrs(imageAlt) : { alt: '' }
+      const ra = attrs(imageAlt, blockText)
       const picked = pickAttrs(imageProperties, embedOpts.pickAttrs)
 
       const { src: imageURL, alt: _alt, ...others } = imageProperties
-      const imageTag: Element = {
-        type: 'element',
-        tagName: rebuildOpts.tagName,
-        properties: {
-          src: imageURL,
-          alt: salt(
-            extractAttrs(imageAlt),
-            editAttrs(ra.properties || {}, picked)
-          ),
-          ...others
-        },
-        children: []
+      const rebuilded: (Element | Text)[] = [
+        {
+          type: 'element',
+          tagName: rebuildOpts.tagName,
+          properties: {
+            src: imageURL,
+            alt:
+              embedOpts.embedTo === 'alt'
+                ? salt(
+                    extractAttrsFromAlt(imageAlt),
+                    editAttrs(ra.properties || {}, picked)
+                  )
+                : salt(extractAttrsFromAlt(imageAlt), {}),
+            ...others
+          },
+          children: []
+        }
+      ]
+      if (embedOpts.embedTo === 'block') {
+        const value = sblock(editAttrs(ra.properties || {}, picked))
+        if (value) {
+          rebuilded.push({
+            type: 'text',
+            value
+          })
+        }
       }
-      let rebuilded: Element = imageTag
-      parent.children[imageIdx] = rebuilded
+      if (ra.removeBlock) {
+        parent.children.splice(imageIdx + 1, 1)
+      }
+      parent.children.splice(imageIdx, 1, ...rebuilded)
     }
   }
 

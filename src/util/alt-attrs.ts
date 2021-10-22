@@ -8,7 +8,7 @@ import { toHtml } from 'hast-util-to-html'
 // const fenceStart = '##'
 // const fenceEnd = '##'
 
-export type ExtractAttrs = {
+export type ExtractAttrsFromAlt = {
   source: string
   extracted: boolean
   surrounded: [string, string]
@@ -17,8 +17,16 @@ export type ExtractAttrs = {
   end: string
 }
 
+export type ExtractAttrsFromBlock = {
+  source: string
+  extracted: boolean
+  surrounded: [string, string]
+  attrs: string
+}
+
 type AttrsResult = {
   alt: string
+  removeBlock?: boolean
   properties?: Properties
   query?: string
   modifiers?: string
@@ -88,9 +96,9 @@ export function pickAttrs(attrs: Properties, pick: string[]): Properties {
   return ret
 }
 
-const extractRegExp = /(^[^#]*)##(.+)##(.*$)/
-export function extractAttrs(alt: string): ExtractAttrs {
-  const s = alt.match(extractRegExp)
+const extractAttrsFromAltRegExp = /(^[^#]*)##(.+)##(.*$)/
+export function extractAttrsFromAlt(alt: string): ExtractAttrsFromAlt {
+  const s = alt.match(extractAttrsFromAltRegExp)
   if (s) {
     return {
       source: alt,
@@ -110,37 +118,77 @@ export function extractAttrs(alt: string): ExtractAttrs {
     end: ''
   }
 }
-
-const dimRegExp = /^d:(\d+)x(\d+)$/
-export function attrs(alt: string): AttrsResult {
-  // Properties {
-  const e = extractAttrs(alt)
-  if (e.extracted) {
-    const properties: Properties = {}
-    Object.entries(decodeAttrs(e.attrs)).forEach(([k, v]) => {
-      const dm = k.match(dimRegExp)
-      if (dm) {
-        properties.width = parseInt(dm[1], 10)
-        properties.height = parseInt(dm[2], 10)
-        return
-      }
-      properties[k] = v
-    })
+const extractAttrsFromBlockRegExp = /^([ \n\r]*){([^}]+)}([ \n\r]*)$/m
+export function extractAttrsFromBlock(block: string): ExtractAttrsFromBlock {
+  const s = block.match(extractAttrsFromBlockRegExp)
+  if (s) {
     return {
-      alt: `${e.start}${e.end}`,
-      properties
+      source: block,
+      extracted: true,
+      surrounded: ['{', '}'],
+      attrs: s[2]
     }
   }
-  return { alt }
+  return {
+    source: block,
+    extracted: false,
+    surrounded: ['', ''],
+    attrs: ''
+  }
 }
 
-export function salt(ex: ExtractAttrs, propertiess: Properties): string {
-  const alt = encodeAttrs(propertiess)
-  if (alt) {
-    if (ex.extracted) {
-      return `${ex.start}${ex.surrounded[0]}${alt}${ex.surrounded[1]}${ex.end}`
+const dimRegExp = /^d:(\d+)x(\d+)$/m
+function decodeDim(attrs: Properties): Properties {
+  const properties: Properties = {}
+  Object.entries(attrs).forEach(([k, v]) => {
+    const dm = k.match(dimRegExp)
+    if (dm) {
+      properties.width = parseInt(dm[1], 10)
+      properties.height = parseInt(dm[2], 10)
+      return
     }
-    return `${ex.source}##${alt}##`
+    properties[k] = v
+  })
+  return properties
+}
+
+export function attrs(alt: string, block: string): AttrsResult {
+  const ret: AttrsResult = {
+    alt,
+    properties: {}
+  }
+
+  const a = extractAttrsFromAlt(alt)
+  if (a.extracted) {
+    Object.assign(ret.properties, decodeDim(decodeAttrs(a.attrs)))
+    ret.alt = `${a.start}${a.end}`
+  }
+  const b = extractAttrsFromBlock(block)
+  if (b.extracted) {
+    Object.assign(ret.properties, decodeDim(decodeAttrs(b.attrs)))
+    ret.removeBlock = true
+  }
+  return ret
+}
+
+export function salt(ex: ExtractAttrsFromAlt, propertiess: Properties): string {
+  const attrText = encodeAttrs(propertiess)
+  if (attrText) {
+    if (ex.extracted) {
+      return `${ex.start}${ex.surrounded[0]}${attrText}${ex.surrounded[1]}${ex.end}`
+    }
+    return `${ex.source}##${attrText}##`
+  }
+  if (ex.extracted) {
+    return `${ex.start}${ex.end}`
   }
   return ex.source
+}
+
+export function sblock(propertiess: Properties): string {
+  const attrText = encodeAttrs(propertiess)
+  if (attrText) {
+    return `{${attrText}}`
+  }
+  return ''
 }

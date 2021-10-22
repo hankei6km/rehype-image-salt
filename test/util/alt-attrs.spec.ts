@@ -3,7 +3,7 @@ import { attrs, salt } from '../../src/util/alt-attrs.js'
 describe('attrs()', () => {
   it('should extract attrs', async () => {
     expect(
-      attrs('abc##class="light-img" sizes="sm:100vw md:50vw lg:400px"##')
+      attrs('abc##class="light-img" sizes="sm:100vw md:50vw lg:400px"##', '')
     ).toEqual({
       alt: 'abc',
       properties: {
@@ -12,7 +12,7 @@ describe('attrs()', () => {
       }
     })
     expect(
-      attrs('##class="light-img" sizes="sm:100vw md:50vw lg:400px"##ABC')
+      attrs('##class="light-img" sizes="sm:100vw md:50vw lg:400px"##ABC', '')
     ).toEqual({
       alt: 'ABC',
       properties: {
@@ -21,7 +21,7 @@ describe('attrs()', () => {
       }
     })
     expect(
-      attrs('abc##class="light-img" sizes="sm:100vw md:50vw lg:400px"##ABC')
+      attrs('abc##class="light-img" sizes="sm:100vw md:50vw lg:400px"##ABC', '')
     ).toEqual({
       alt: 'abcABC',
       properties: {
@@ -29,11 +29,35 @@ describe('attrs()', () => {
         sizes: 'sm:100vw md:50vw lg:400px'
       }
     })
+    expect(
+      attrs('abc', '{class="light-img" sizes="sm:100vw md:50vw lg:400px"}')
+    ).toEqual({
+      alt: 'abc',
+      removeBlock: true,
+      properties: {
+        className: ['light-img'],
+        sizes: 'sm:100vw md:50vw lg:400px'
+      }
+    })
+    expect(
+      attrs(
+        'abc',
+        '  \n {\n class="light-img"\n sizes="sm:100vw \n md:50vw lg:400px"} \n '
+      )
+    ).toEqual({
+      alt: 'abc',
+      removeBlock: true,
+      properties: {
+        className: ['light-img'],
+        sizes: 'sm:100vw \n md:50vw lg:400px'
+      }
+    })
   })
   it('should extract attrs with dimension', async () => {
     expect(
       attrs(
-        'abc##d:300x200 class="light-img" sizes="sm:100vw md:50vw lg:400px"##'
+        'abc##d:300x200 class="light-img" sizes="sm:100vw md:50vw lg:400px"##',
+        ''
       )
     ).toEqual({
       alt: 'abc',
@@ -44,9 +68,24 @@ describe('attrs()', () => {
         sizes: 'sm:100vw md:50vw lg:400px'
       }
     })
+    expect(
+      attrs(
+        'abc',
+        '{d:300x200 class="light-img" sizes="sm:100vw md:50vw lg:400px"}'
+      )
+    ).toEqual({
+      alt: 'abc',
+      removeBlock: true,
+      properties: {
+        width: 300,
+        height: 200,
+        className: ['light-img'],
+        sizes: 'sm:100vw md:50vw lg:400px'
+      }
+    })
   })
   it('should extract attrs as enpty', async () => {
-    expect(attrs('abc## ##')).toEqual({
+    expect(attrs('abc## ##', '')).toEqual({
       alt: 'abc',
       properties: {}
     })
@@ -54,7 +93,8 @@ describe('attrs()', () => {
   it('should extract attrs with query', async () => {
     expect(
       attrs(
-        'abc##d:300x200 class="light-img" q="auto=compress%2Cformat&crop64=Zm9jYWxwb2ludA&fit64=Y3JvcA&fp-x64=MC42&fp-z64=MS4z" sizes="sm:100vw md:50vw lg:400px"##'
+        'abc##d:300x200 class="light-img" q="auto=compress%2Cformat&crop64=Zm9jYWxwb2ludA&fit64=Y3JvcA&fp-x64=MC42&fp-z64=MS4z" sizes="sm:100vw md:50vw lg:400px"##',
+        ''
       )
     ).toEqual({
       alt: 'abc',
@@ -70,7 +110,8 @@ describe('attrs()', () => {
   it('should extract attrs with query(encoded)', async () => {
     expect(
       attrs(
-        'abc##d:300x200 class="light-img" q="auto=compress%2Cformat&#x26;crop64=Zm9jYWxwb2ludA&#x26;fit64=Y3JvcA&#x26;fp-x64=MC42&#x26;fp-z64=MS4z" sizes="sm:100vw md:50vw lg:400px"##'
+        'abc##d:300x200 class="light-img" q="auto=compress%2Cformat&#x26;crop64=Zm9jYWxwb2ludA&#x26;fit64=Y3JvcA&#x26;fp-x64=MC42&#x26;fp-z64=MS4z" sizes="sm:100vw md:50vw lg:400px"##',
+        ''
       )
     ).toEqual({
       alt: 'abc',
@@ -84,16 +125,26 @@ describe('attrs()', () => {
     })
   })
   it('should return just alt', async () => {
-    expect(attrs('abc')).toEqual({ alt: 'abc' })
-    expect(attrs('abc##')).toEqual({ alt: 'abc##' })
-    expect(attrs('abc####')).toEqual({ alt: 'abc####' })
-    expect(attrs('abc##ABC')).toEqual({ alt: 'abc##ABC' })
-    expect(attrs('abc####ABC')).toEqual({ alt: 'abc####ABC' })
+    expect(attrs('abc', '')).toEqual({ alt: 'abc', properties: {} })
+    expect(attrs('abc##', '')).toEqual({ alt: 'abc##', properties: {} })
+    expect(attrs('abc####', '')).toEqual({ alt: 'abc####', properties: {} })
+    expect(attrs('abc##ABC', '')).toEqual({ alt: 'abc##ABC', properties: {} })
+    expect(attrs('abc####ABC', '')).toEqual({
+      alt: 'abc####ABC',
+      properties: {}
+    })
   })
   it('should trhow error when invalid attrs has injected', async () => {
     expect(() =>
       attrs(
-        'abc##d:300x200 class="light-img" sizes="sm:100vw md:50vw lg:400px" >##'
+        'abc##d:300x200 class="light-img" sizes="sm:100vw md:50vw lg:400px" >##',
+        ''
+      )
+    ).toThrowError('extractAttrs: invalid attrs has injected')
+    expect(() =>
+      attrs(
+        'abc',
+        '{d:300x200 class="light-img" sizes="sm:100vw md:50vw lg:400px" >}'
       )
     ).toThrowError('extractAttrs: invalid attrs has injected')
   })

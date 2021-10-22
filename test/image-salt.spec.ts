@@ -48,7 +48,7 @@ describe('rehypeImageSalt rebuild', () => {
     expect(
       await f(
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1"></p>',
-        { rebuild: { tagName: 'nuxt-img' }, embed: {} }
+        { rebuild: { tagName: 'nuxt-img' } }
       )
     ).toEqual(
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><nuxt-img src="/path/to/image1.jpg" alt="image1"></nuxt-img></p>'
@@ -58,7 +58,7 @@ describe('rehypeImageSalt rebuild', () => {
     expect(
       await f(
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1#modifiers=&#x22;blur=100&#x22;#"></p>',
-        { rebuild: { tagName: 'nuxt-img' }, embed: {} }
+        { rebuild: { tagName: 'nuxt-img' } }
       )
     ).toEqual(
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><nuxt-img src="/path/to/image1.jpg" alt="image1" :modifiers="{&#x22;blur&#x22;:&#x22;100&#x22;}"></nuxt-img></p>'
@@ -88,8 +88,7 @@ describe('rehypeImageSalt rebuild', () => {
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1#class=&#x22;light-img&#x22;#"></p>',
         {
           baseURL: 'https://localhost:3000/',
-          rebuild: {},
-          embed: {}
+          rebuild: {}
         }
       )
     ).toEqual(
@@ -102,8 +101,7 @@ describe('rehypeImageSalt rebuild', () => {
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1#class=&#x22;light-img&#x22;#"></p><h2>test2</h2><p>image-salt-2</p><p><img src="https://localhost:3001/path/to/image2.jpg" alt="image2#class=&#x22;light-img&#x22;#"></p>',
         {
           baseURL: 'https://localhost:3000/',
-          rebuild: {},
-          embed: {}
+          rebuild: {}
         }
       )
     ).toEqual(
@@ -118,8 +116,7 @@ describe('rehypeImageSalt rebuild', () => {
           baseURL: 'https://localhost:3000/',
           rebuild: {
             keepBaseURL: true
-          },
-          embed: {}
+          }
         }
       )
     ).toEqual(
@@ -134,8 +131,7 @@ describe('rehypeImageSalt rebuild', () => {
           rebuild: {
             tagName: 'nuxt-img',
             baseAttrs: 'provider="imgix"'
-          },
-          embed: {}
+          }
         }
       )
     ).toEqual(
@@ -150,8 +146,7 @@ describe('rehypeImageSalt rebuild', () => {
           rebuild: {
             tagName: 'nuxt-img',
             baseAttrs: 'provider="imgix" class="light-img"'
-          },
-          embed: {}
+          }
         }
       )
     ).toEqual(
@@ -185,7 +180,7 @@ describe('rehypeImageSalt embed', () => {
     expect(
       await f(
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="300" height="200"></p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt=""></p>',
-        { command: 'embed', rebuild: {}, embed: {} }
+        { command: 'embed', embed: {} }
       )
     ).toEqual(
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1#width=&#x22;300&#x22; height=&#x22;200&#x22;#" width="300" height="200"></p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt=""></p>'
@@ -197,7 +192,6 @@ describe('rehypeImageSalt embed', () => {
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="300" height="200" class="light-img"></p>',
         {
           command: 'embed',
-          rebuild: {},
           embed: { piackAttrs: ['width', 'class'] }
         }
       )
@@ -211,7 +205,6 @@ describe('rehypeImageSalt embed', () => {
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" width="300" height="200" class="light-img"></p>',
         {
           command: 'embed',
-          rebuild: {},
           embed: { piackAttrs: ['width', 'class'] }
         }
       )
@@ -226,7 +219,6 @@ describe('rehypeImageSalt embed', () => {
         {
           command: 'embed',
           baseURL: 'https://localhost:3000/',
-          rebuild: {},
           embed: {}
         }
       )

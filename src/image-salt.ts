@@ -27,8 +27,8 @@ export type CommandNames = 'rebuild' | 'embed'
 export type RehypeImageSaltOptions = {
   command?: CommandNames
   baseURL?: string
-  rebuild: RehypeImageSaltOptionsRebuild
-  embed: RehypeImageSaltOptionsEmbed
+  rebuild?: RehypeImageSaltOptionsRebuild
+  embed?: RehypeImageSaltOptionsEmbed
 }
 const defaultOpts: Required<RehypeImageSaltOptions> & {
   rebuild: Required<RehypeImageSaltOptionsRebuild>
@@ -55,21 +55,21 @@ export const rehypeImageSalt: Plugin = function rehypeImageSalt(
     opts.baseURL !== undefined ? opts.baseURL : defaultOpts.baseURL
   const rebuildOpts: Required<RehypeImageSaltOptionsRebuild> = {
     tagName:
-      opts.rebuild.tagName !== undefined
+      opts.rebuild?.tagName !== undefined
         ? opts.rebuild.tagName
         : defaultOpts.rebuild.tagName,
     keepBaseURL:
-      opts.rebuild.keepBaseURL !== undefined
+      opts.rebuild?.keepBaseURL !== undefined
         ? opts.rebuild.keepBaseURL
         : defaultOpts.rebuild.keepBaseURL,
     baseAttrs:
-      opts.rebuild.baseAttrs !== undefined
+      opts.rebuild?.baseAttrs !== undefined
         ? opts.rebuild.baseAttrs
         : defaultOpts.rebuild.baseAttrs
   }
   const embedOpts: Required<RehypeImageSaltOptionsEmbed> = {
     piackAttrs:
-      opts.embed.piackAttrs !== undefined
+      opts.embed?.piackAttrs !== undefined
         ? opts.embed.piackAttrs
         : defaultOpts.embed.piackAttrs
   }

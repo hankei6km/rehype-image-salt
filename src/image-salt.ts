@@ -181,9 +181,9 @@ export const rehypeImageSalt: Plugin = function rehypeImageSalt(
       const imageProperties = image.properties || {}
 
       const ra = imageAlt ? attrs(imageAlt) : { alt: '' }
-      const picked = piackAttrs(image.properties || {}, embedOpts.piackAttrs)
+      const picked = piackAttrs(imageProperties, embedOpts.piackAttrs)
 
-      const { src: imageURL, alt: _alt, ...others } = image.properties || {}
+      const { src: imageURL, alt: _alt, ...others } = imageProperties
       const imageTag: Element = {
         type: 'element',
         tagName: rebuildOpts.tagName,

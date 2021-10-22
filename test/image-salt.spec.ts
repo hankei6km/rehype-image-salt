@@ -241,7 +241,7 @@ describe('rehypeImageSalt embed', () => {
   it('should protect embedded attrs(dimension)', async () => {
     expect(
       await f(
-        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1#height=&#x22;400&#x22;#" width="300" height="200" class="light-img"></p>',
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1#d:600x400#" width="300" height="200" class="light-img"></p>',
         {
           command: 'embed',
           embed: { piackAttrs: ['width', 'height', 'class'] }

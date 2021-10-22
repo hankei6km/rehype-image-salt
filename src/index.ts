@@ -1,2 +1,3 @@
-import countChars from './count.js'
-export { countChars }
+import { rehypeImageSalt } from './image-salt.js'
+
+export default rehypeImageSalt

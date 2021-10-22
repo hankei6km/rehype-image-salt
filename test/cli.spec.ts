@@ -1,53 +1,140 @@
+import { ReadStream } from 'fs'
 import { PassThrough } from 'stream'
-import { jest } from '@jest/globals'
 import cli from '../src/cli.js'
 
 describe('cli()', () => {
+  const io: Record<'stdin' | 'stdout' | 'stderr', PassThrough> = {
+    stdin: new PassThrough(),
+    stdout: new PassThrough(),
+    stderr: new PassThrough()
+  }
+  beforeEach(() => {
+    io.stdin = new PassThrough()
+    io.stdout = new PassThrough()
+    io.stderr = new PassThrough()
+  })
+
   it('should return stdout with exitcode=0', async () => {
-    const stdout = new PassThrough()
-    const stderr = new PassThrough()
-    const outData = jest.fn()
-    stdout.on('data', outData)
-    const errData = jest.fn()
-    stderr.on('data', errData)
+    let outData = ''
+    io.stdout.on('data', (d) => (outData = outData + d))
+    let errData = ''
+    io.stderr.on('data', (d) => (errData = errData + d))
+    process.nextTick(() => {
+      io.stdin.write(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1#class=&#x22;light-img&#x22;#"></p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="#sizes=&#x22;sm:100vw md:50vw lg:400px&#x22;#"></p>'
+      )
+      io.stdin.end()
+    })
+
     expect(
       await cli({
-        filenames: ['test/assets/test1.txt', 'test/assets/test2.txt'],
-        stdout,
-        stderr
+        ...io,
+        rebuild: {},
+        embed: {}
       })
     ).toEqual(0)
-    expect(outData.mock.calls.length).toEqual(2)
-    expect((outData.mock.calls[0][0] as Buffer).toString('utf8')).toEqual(
-      'test/assets/test1.txt: 15 chars\n'
-    )
-    expect((outData.mock.calls[1][0] as Buffer).toString('utf8')).toEqual(
-      'test/assets/test2.txt: 17 chars\n'
-    )
-    expect(errData.mock.calls.length).toEqual(0)
+    expect(outData).toMatchSnapshot()
+    expect(errData).toEqual('')
   })
-  it('should return stderr with exitcode=1', async () => {
-    const stdout = new PassThrough()
-    const stderr = new PassThrough()
-    const outData = jest.fn()
-    stdout.on('data', outData)
-    const errData = jest.fn()
-    stderr.on('data', errData)
+  it('should skip url was not matched baseURL', async () => {
+    let outData = ''
+    io.stdout.on('data', (d) => (outData = outData + d))
+    let errData = ''
+    io.stderr.on('data', (d) => (errData = errData + d))
+    process.nextTick(() => {
+      io.stdin.write(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1#class=&#x22;light-img&#x22;#"></p><h2>test2</h2><p>image-salt-2</p><p><img src="https://localhost:3001/path/to/image2.jpg" alt="image2#class=&#x22;light-img&#x22;#"></p>'
+      )
+      io.stdin.end()
+    })
+
     expect(
       await cli({
-        filenames: ['test/assets/test1.txt', 'test/assets/fail.txt'],
-        stdout,
-        stderr
+        ...io,
+        baseURL: 'https://localhost:3000/',
+        rebuild: {},
+        embed: {}
+      })
+    ).toEqual(0)
+    expect(outData).toMatchSnapshot()
+    expect(errData).toEqual('')
+  })
+  it('should keep baseURL', async () => {
+    let outData = ''
+    io.stdout.on('data', (d) => (outData = outData + d))
+    let errData = ''
+    io.stderr.on('data', (d) => (errData = errData + d))
+    process.nextTick(() => {
+      io.stdin.write(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1#class=&#x22;light-img&#x22;#"></p>'
+      )
+      io.stdin.end()
+    })
+
+    expect(
+      await cli({
+        ...io,
+        baseURL: 'https://localhost:3000/',
+        rebuild: {
+          keepBaseURL: true
+        },
+        embed: {}
+      })
+    ).toEqual(0)
+    expect(outData).toMatchSnapshot()
+    expect(errData).toEqual('')
+  })
+  it('should apply baseAttrs', async () => {
+    let outData = ''
+    io.stdout.on('data', (d) => (outData = outData + d))
+    let errData = ''
+    io.stderr.on('data', (d) => (errData = errData + d))
+    process.nextTick(() => {
+      io.stdin.write(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1#class=&#x22;dark-img&#x22; modifiers=&#x22;blur=100&#x22;#"></p>'
+      )
+      io.stdin.end()
+    })
+
+    expect(
+      await cli({
+        ...io,
+        baseURL: 'https://localhost:3000/',
+        rebuild: {
+          keepBaseURL: true,
+          baseAttrs: 'provider="imgix" class="light-img"'
+        },
+        embed: {}
+      })
+    ).toEqual(0)
+    expect(outData).toMatchSnapshot()
+    expect(errData).toEqual('')
+  })
+  it('should return stderr with exitcode=1', async () => {
+    let outData = ''
+    io.stdout.on('data', (d) => (outData = outData + d))
+    let errData = ''
+    io.stderr.on('data', (d) => (errData = errData + d))
+    process.nextTick(() => {
+      io.stdin.write(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1#class=&#x22;light-img&#x22;&gt;#"></p>'
+      )
+      io.stdin.end()
+    })
+
+    expect(
+      await cli({
+        ...io,
+        baseURL: '',
+        rebuild: {
+          tagName: '',
+          keepBaseURL: false,
+          baseAttrs: ''
+        },
+        embed: {}
       })
     ).toEqual(1)
-    expect(outData.mock.calls.length).toEqual(1)
-    expect((outData.mock.calls[0][0] as Buffer).toString('utf8')).toEqual(
-      'test/assets/test1.txt: 15 chars\n'
-    )
-    expect(errData.mock.calls.length).toEqual(2)
-    expect((errData.mock.calls[0][0] as Buffer).toString('utf8')).toEqual(
-      "Error: ENOENT: no such file or directory, open 'test/assets/fail.txt'"
-    )
-    expect((errData.mock.calls[1][0] as Buffer).toString('utf8')).toEqual('\n')
+    expect(outData).toEqual('')
+    expect(errData).toMatchSnapshot()
   })
 })

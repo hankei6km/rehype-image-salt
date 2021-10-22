@@ -67,6 +67,22 @@ describe('attrs()', () => {
       }
     })
   })
+  it('should extract attrs with query(encoded)', async () => {
+    expect(
+      attrs(
+        'abc##d:300x200 class="light-img" q="auto=compress%2Cformat&#x26;crop64=Zm9jYWxwb2ludA&#x26;fit64=Y3JvcA&#x26;fp-x64=MC42&#x26;fp-z64=MS4z" sizes="sm:100vw md:50vw lg:400px"##'
+      )
+    ).toEqual({
+      alt: 'abc',
+      properties: {
+        width: 300,
+        height: 200,
+        q: 'auto=compress%2Cformat&crop64=Zm9jYWxwb2ludA&fit64=Y3JvcA&fp-x64=MC42&fp-z64=MS4z',
+        className: ['light-img'],
+        sizes: 'sm:100vw md:50vw lg:400px'
+      }
+    })
+  })
   it('should return just alt', async () => {
     expect(attrs('abc')).toEqual({ alt: 'abc' })
     expect(attrs('abc##')).toEqual({ alt: 'abc##' })

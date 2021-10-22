@@ -88,7 +88,7 @@ export function piackAttrs(attrs: Properties, pick: string[]): Properties {
   return ret
 }
 
-const extractRegExp = /(^[^#]*)##([^#]+)##(.*$)/
+const extractRegExp = /(^[^#]*)##(.+)##(.*$)/
 export function extractAttrs(alt: string): ExtractAttrs {
   const s = alt.match(extractRegExp)
   if (s) {

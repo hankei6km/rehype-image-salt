@@ -9,7 +9,7 @@ const f = async (
 ): Promise<string> => {
   return await unified()
     .use(rehypeParse, { fragment: true })
-    .use(rehypeImageSalt, opts)
+    .use(rehypeImageSalt, opts || {})
     .use(stringify, {})
     .freeze()
     .process(markdown)

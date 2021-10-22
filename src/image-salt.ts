@@ -1,7 +1,7 @@
 import { Plugin, Transformer } from 'unified'
 import { Node } from 'unist'
 // import { Parent, Image, HTML } from 'mdast'
-import { Parent, Element, Properties } from 'hast'
+import { Root, Parent, Element, Properties } from 'hast'
 import { visitParents } from 'unist-util-visit-parents'
 import { toHtml } from 'hast-util-to-html'
 import {
@@ -46,7 +46,11 @@ const defaultOpts: Required<RehypeImageSaltOptions> & {
   }
 }
 
-export const rehypeImageSalt: Plugin = function rehypeImageSalt(
+export const rehypeImageSalt: Plugin<
+  [RehypeImageSaltOptions] | [],
+  string,
+  Root
+> = function rehypeImageSalt(
   opts: RehypeImageSaltOptions = defaultOpts
 ): Transformer {
   const command =

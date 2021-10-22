@@ -60,15 +60,13 @@ export function encodeAttrs(properties: Properties): string {
 }
 
 export function editAttrs(
+  base: Properties,
   attrs: Properties,
-  s: Properties,
   replace?: boolean
 ): Properties {
-  const ret: Properties = {}
-  Object.entries(s).forEach(([k, v]) => {
-    if (attrs[k] === undefined || replace) {
-      ret[k] = s[k]
-    } else {
+  const ret: Properties = { ...base }
+  Object.entries(attrs).forEach(([k, v]) => {
+    if (base[k] === undefined || replace) {
       ret[k] = attrs[k]
     }
   })

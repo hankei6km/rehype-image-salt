@@ -193,7 +193,10 @@ export const rehypeImageSalt: Plugin<
         tagName: rebuildOpts.tagName,
         properties: {
           src: imageURL,
-          alt: salt(extractAttrs(imageAlt), editAttrs(imageProperties, picked)),
+          alt: salt(
+            extractAttrs(imageAlt),
+            editAttrs(ra.properties || {}, picked)
+          ),
           ...others
         },
         children: []

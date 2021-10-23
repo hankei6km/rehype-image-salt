@@ -155,6 +155,17 @@ describe('attrsFromBlock()', () => {
       }
     })
   })
+  it('should separate attrs by <br>', async () => {
+    expect(
+      attrsFromBlock(f('<img src="image.jpg"><br>{<br>attr1<br>attr2<br>}'), 1)
+    ).toEqual({
+      removeRange: { startIdx: 2, endIdx: 8, keepText: '', count: 7 },
+      properties: {
+        attr1: '',
+        attr2: ''
+      }
+    })
+  })
   it('should set range with text value', async () => {
     expect(
       attrsFromBlock(f('<img src="image.jpg">{class="light-img"}text'), 1)

@@ -202,6 +202,18 @@ describe('attrsFromBlock()', () => {
       'attrsFromBlock: Error: extractAttrs: invalid attrs has injected'
     )
   })
+  it('should not extract block when can not close block', async () => {
+    expect(
+      attrsFromBlock(
+        f(
+          '<img src="image1.jpg"><br>{<br>class="light-img"<br><img src="image2.jpg">'
+        ),
+        1
+      )
+    ).toEqual({
+      properties: {}
+    })
+  })
   it('should not extract block when can not trimed', async () => {
     expect(
       attrsFromBlock(

@@ -171,6 +171,8 @@ export function extractAttrsFromBlock(
         }
       } else if (n.type === 'element' && (n as Element).tagName === 'br') {
         textValue = textValue + '\n'
+      } else {
+        break
       }
     }
   }

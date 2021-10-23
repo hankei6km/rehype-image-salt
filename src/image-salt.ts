@@ -12,7 +12,7 @@ import {
   pickAttrs,
   salt,
   sblock
-} from './util/alt-attrs.js'
+} from './util/attrs.js'
 import { editQuery, toModifiers } from './util/query.js'
 import { trimBaseURL } from './util/util.js'
 

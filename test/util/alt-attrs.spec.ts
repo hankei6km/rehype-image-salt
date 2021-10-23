@@ -1,4 +1,4 @@
-import { attrs, salt } from '../../src/util/alt-attrs.js'
+import { attrs, salt } from '../../src/util/attrs.js'
 
 describe('attrs()', () => {
   it('should extract attrs', async () => {

@@ -1,8 +1,7 @@
 import parse5 from 'parse5'
 import { fromParse5 } from 'hast-util-from-parse5'
-import { Element } from 'hast'
+import { Element, Properties, Text } from 'hast'
 import { Node } from 'unist'
-import { Properties } from 'hast'
 import { toHtml } from 'hast-util-to-html'
 
 // const fenceStart = '##'
@@ -18,18 +17,25 @@ export type ExtractAttrsFromAlt = {
 }
 
 export type ExtractAttrsFromBlock = {
-  source: string
   extracted: boolean
   surrounded: [string, string]
+  range: [number, number, string]
   attrs: string
 }
 
-type AttrsResult = {
+type AttrsResultFromAlt = {
   alt: string
-  removeBlock?: boolean
   properties?: Properties
-  query?: string
-  modifiers?: string
+}
+
+type AttrsResultFromBlock = {
+  removeRange?: {
+    startIdx: number
+    endIdx: number
+    keepText: string
+    count: number
+  }
+  properties?: Properties
 }
 
 export function decodeAttrs(s: string): Properties {
@@ -118,23 +124,55 @@ export function extractAttrsFromAlt(alt: string): ExtractAttrsFromAlt {
     end: ''
   }
 }
-const extractAttrsFromBlockRegExp = /^([ \n\r]*){([^}]+)}([ \n\r]*)$/m
-export function extractAttrsFromBlock(block: string): ExtractAttrsFromBlock {
-  const s = block.match(extractAttrsFromBlockRegExp)
-  if (s) {
-    return {
-      source: block,
-      extracted: true,
-      surrounded: ['{', '}'],
-      attrs: s[2]
-    }
-  }
-  return {
-    source: block,
+const extractAttrsFromBlockRegExp = /^([ \n\r\t]*){([^}]+)}(.*)$/m
+const extractAttrsFromBlockRegTextSkipExp = /^[ \n\r\t]*$/m
+export function extractAttrsFromBlock(
+  children: Node[],
+  startIdx: number
+): ExtractAttrsFromBlock {
+  const ret: ExtractAttrsFromBlock = {
     extracted: false,
-    surrounded: ['', ''],
+    surrounded: ['{', '}'],
+    range: [-1, -1, ''],
     attrs: ''
   }
+  const len = children.length
+  for (let idx = startIdx; idx < len; idx++) {
+    const n = children[idx]
+    if (n.type === 'text' && (n as Text).value.indexOf('{') >= 0) {
+      // block の開始が含まれている text node
+      ret.range[0] = idx
+      break
+    } else if (
+      !(
+        (n.type === 'element' && (n as Element).tagName === 'br') ||
+        (n.type === 'text' &&
+          (n as Text).value.match(extractAttrsFromBlockRegTextSkipExp))
+      )
+    ) {
+      // ブランク的な node **ではなかった**
+      ret.range[0] = -1
+      break
+    }
+  }
+  if (ret.range[0] >= 0) {
+    let textValue = ''
+    for (let idx = ret.range[0]; idx < len; idx++) {
+      const n = children[idx]
+      if (n.type === 'text') {
+        textValue = textValue + (n as Text).value
+        const m = textValue.match(extractAttrsFromBlockRegExp)
+        if (m) {
+          ret.extracted = true
+          ret.range[1] = idx
+          ret.range[2] = m[3]
+          ret.attrs = m[2]
+          break
+        }
+      }
+    }
+  }
+  return ret
 }
 
 const dimRegExp = /^d:(\d+)x(\d+)$/m
@@ -152,23 +190,47 @@ function decodeDim(attrs: Properties): Properties {
   return properties
 }
 
-export function attrs(alt: string, block: string): AttrsResult {
-  const ret: AttrsResult = {
-    alt,
-    properties: {}
-  }
+export function attrsFromAlt(alt: string): AttrsResultFromAlt {
+  try {
+    const ret: AttrsResultFromAlt = {
+      alt,
+      properties: {}
+    }
 
-  const a = extractAttrsFromAlt(alt)
-  if (a.extracted) {
-    Object.assign(ret.properties, decodeDim(decodeAttrs(a.attrs)))
-    ret.alt = `${a.start}${a.end}`
+    const a = extractAttrsFromAlt(alt)
+    if (a.extracted) {
+      Object.assign(ret.properties, decodeDim(decodeAttrs(a.attrs)))
+      ret.alt = `${a.start}${a.end}`
+    }
+    return ret
+  } catch (err: any) {
+    throw new Error(`attrsFromAlt: ${err}`)
   }
-  const b = extractAttrsFromBlock(block)
-  if (b.extracted) {
-    Object.assign(ret.properties, decodeDim(decodeAttrs(b.attrs)))
-    ret.removeBlock = true
+}
+
+export function attrsFromBlock(
+  children: Node[],
+  startIdx: number
+): AttrsResultFromBlock {
+  try {
+    const ret: AttrsResultFromBlock = {
+      properties: {}
+    }
+
+    const b = extractAttrsFromBlock(children, startIdx)
+    if (b.extracted) {
+      Object.assign(ret.properties, decodeDim(decodeAttrs(b.attrs)))
+      ret.removeRange = {
+        startIdx: b.range[0],
+        endIdx: b.range[1],
+        keepText: b.range[2], // 末尾の node に残す text
+        count: b.range[1] - b.range[0] + (b.range[2] ? 0 : 1)
+      }
+    }
+    return ret
+  } catch (err: any) {
+    throw new Error(`attrsFromBlock: ${err}`)
   }
-  return ret
 }
 
 export function salt(ex: ExtractAttrsFromAlt, propertiess: Properties): string {

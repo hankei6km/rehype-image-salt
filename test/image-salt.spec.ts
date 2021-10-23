@@ -53,6 +53,15 @@ describe('rehypeImageSalt rebuild', () => {
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" class="light-img"></p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="" sizes="sm:100vw md:50vw lg:400px"></p>'
     )
   })
+  it('should rebuild slibing img by each block', async () => {
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1<img src="/path/to/image1.jpg" alt="image1">{class="light-img"}image-salt-2<img src="/path/to/image2.jpg" alt="">{ sizes="sm:100vw md:50vw lg:400px"}</p>'
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1<img src="/path/to/image1.jpg" alt="image1" class="light-img">image-salt-2<img src="/path/to/image2.jpg" alt="" sizes="sm:100vw md:50vw lg:400px"></p>'
+    )
+  })
   it('should rebuild img tag with attrs from both alt and block', async () => {
     expect(
       await f(
@@ -298,7 +307,7 @@ describe('rehypeImageSalt embed', () => {
   it('should merge attrs to embedded attrs then embed to block', async () => {
     expect(
       await f(
-        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1##height=&#x22;400&#x22;##" width="300" height="200" class="light-img"></p>',
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="300" height="200" class="light-img">{height="400"}</p>',
         {
           command: 'embed',
           embed: { embedTo: 'block', pickAttrs: ['width', 'class'] }

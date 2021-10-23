@@ -2,10 +2,11 @@ import { Plugin, Transformer } from 'unified'
 import { Node } from 'unist'
 // import { Parent, Image, HTML } from 'mdast'
 import { Root, Parent, Element, Properties, Text } from 'hast'
-import { visitParents } from 'unist-util-visit-parents'
+import { visitParents, CONTINUE, SKIP } from 'unist-util-visit-parents'
 import { toHtml } from 'hast-util-to-html'
 import {
-  attrs,
+  attrsFromAlt,
+  attrsFromBlock,
   decodeAttrs,
   editAttrs,
   extractAttrsFromAlt,
@@ -102,10 +103,6 @@ export const rehypeImageSalt: Plugin<
     const parent: Parent = parents[parentsLen - 1]
     const imageIdx = parent.children.findIndex((n) => n === node)
     const image: Element = node as Element
-    const text: Text | undefined =
-      parent.children[imageIdx + 1]?.type === 'text'
-        ? (parent.children[imageIdx + 1] as Text)
-        : undefined
 
     if (
       typeof image.properties?.src === 'string' &&
@@ -113,13 +110,18 @@ export const rehypeImageSalt: Plugin<
     ) {
       const imageAlt =
         typeof image.properties?.alt === 'string' ? image.properties?.alt : ''
-      const blockText = text?.value || ''
       let imageURL = image.properties.src
       let largeImageURL = ''
 
-      const ra = attrs(imageAlt, blockText)
+      const resFromAlt = attrsFromAlt(imageAlt)
+      const resFromBlock = attrsFromBlock(parent.children, imageIdx + 1)
       const workProperties: Properties = {}
-      Object.assign(workProperties, baseProperties, ra.properties || {})
+      Object.assign(
+        workProperties,
+        baseProperties,
+        resFromAlt.properties || {},
+        resFromBlock.properties || {}
+      )
       const {
         src: _src,
         alt: _alt,
@@ -159,7 +161,7 @@ export const rehypeImageSalt: Plugin<
         tagName: rebuildOpts.tagName,
         properties: {
           src: imageURL,
-          alt: ra.alt,
+          alt: resFromAlt.alt,
           ...properties
         },
         children: []
@@ -178,10 +180,22 @@ export const rehypeImageSalt: Plugin<
         }
         rebuilded = largeImageTag
       }
-      if (ra.removeBlock) {
-        parent.children.splice(imageIdx + 1, 1)
+      if (resFromBlock.removeRange) {
+        const textValue = resFromBlock.removeRange.keepText
+        parent.children.splice(
+          resFromBlock.removeRange.startIdx,
+          resFromBlock.removeRange.count
+        )
+        if (
+          textValue &&
+          parent.children[resFromBlock.removeRange.endIdx].type === 'text' // 念のため.
+        ) {
+          ;(parent.children[resFromBlock.removeRange.endIdx] as Text).value =
+            textValue
+        }
       }
       parent.children[imageIdx] = rebuilded
+      return SKIP // サムネイル化で <a> の children になるので.
     }
   }
 
@@ -190,10 +204,6 @@ export const rehypeImageSalt: Plugin<
     const parent: Parent = parents[parentsLen - 1]
     const imageIdx = parent.children.findIndex((n) => n === node)
     const image: Element = node as Element
-    const text: Text | undefined =
-      parent.children[imageIdx + 1]?.type === 'text'
-        ? (parent.children[imageIdx + 1] as Text)
-        : undefined
 
     if (
       typeof image.properties?.src === 'string' &&
@@ -202,9 +212,15 @@ export const rehypeImageSalt: Plugin<
       const imageAlt =
         typeof image.properties?.alt === 'string' ? image.properties?.alt : ''
       const imageProperties = image.properties || {}
-      const blockText = text?.value || ''
 
-      const ra = attrs(imageAlt, blockText)
+      const resFromAlt = attrsFromAlt(imageAlt)
+      const resFromBlock = attrsFromBlock(parent.children, imageIdx + 1)
+      const workProperties: Properties = {}
+      Object.assign(
+        workProperties,
+        resFromAlt.properties || {},
+        resFromBlock.properties || {}
+      )
       const picked = pickAttrs(imageProperties, embedOpts.pickAttrs)
 
       const { src: imageURL, alt: _alt, ...others } = imageProperties
@@ -218,7 +234,7 @@ export const rehypeImageSalt: Plugin<
               embedOpts.embedTo === 'alt'
                 ? salt(
                     extractAttrsFromAlt(imageAlt),
-                    editAttrs(ra.properties || {}, picked)
+                    editAttrs(workProperties, picked)
                   )
                 : salt(extractAttrsFromAlt(imageAlt), {}),
             ...others
@@ -227,7 +243,7 @@ export const rehypeImageSalt: Plugin<
         }
       ]
       if (embedOpts.embedTo === 'block') {
-        const value = sblock(editAttrs(ra.properties || {}, picked))
+        const value = sblock(editAttrs(workProperties, picked))
         if (value) {
           rebuilded.push({
             type: 'text',
@@ -235,10 +251,23 @@ export const rehypeImageSalt: Plugin<
           })
         }
       }
-      if (ra.removeBlock) {
-        parent.children.splice(imageIdx + 1, 1)
+
+      if (resFromBlock.removeRange) {
+        const textValue = resFromBlock.removeRange.keepText
+        parent.children.splice(
+          resFromBlock.removeRange.startIdx,
+          resFromBlock.removeRange.count
+        )
+        if (
+          textValue &&
+          parent.children[resFromBlock.removeRange.endIdx].type === 'text' // 念のため.
+        ) {
+          ;(parent.children[resFromBlock.removeRange.endIdx] as Text).value =
+            textValue
+        }
       }
       parent.children.splice(imageIdx, 1, ...rebuilded)
+      return
     }
   }
 

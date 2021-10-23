@@ -5,7 +5,7 @@ exports[`cli() should apply baseAttrs 1`] = `"<h1>test</h1><h2>test1</h2><p>imag
 exports[`cli() should keep baseURL 1`] = `"<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src=\\"https://localhost:3000/path/to/image1.jpg\\" alt=\\"image1\\" class=\\"light-img\\"></p>"`;
 
 exports[`cli() should return stderr with exitcode=1 1`] = `
-"Error: extractAttrs: invalid attrs has injected
+"Error: attrsFromAlt: Error: extractAttrs: invalid attrs has injected
 "
 `;
 

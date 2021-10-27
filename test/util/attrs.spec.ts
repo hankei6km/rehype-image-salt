@@ -36,21 +36,6 @@ describe('attrsFromAlt()', () => {
       }
     })
   })
-  it('should extract attrs with dimension', async () => {
-    expect(
-      attrsFromAlt(
-        'abc##d:300x200 class="light-img" sizes="sm:100vw md:50vw lg:400px"##'
-      )
-    ).toEqual({
-      alt: 'abc',
-      properties: {
-        width: 300,
-        height: 200,
-        className: ['light-img'],
-        sizes: 'sm:100vw md:50vw lg:400px'
-      }
-    })
-  })
   it('should extract attrs as enpty', async () => {
     expect(attrsFromAlt('abc## ##')).toEqual({
       alt: 'abc',
@@ -60,7 +45,7 @@ describe('attrsFromAlt()', () => {
   it('should extract attrs with query', async () => {
     expect(
       attrsFromAlt(
-        'abc##d:300x200 class="light-img" q="auto=compress%2Cformat&crop64=Zm9jYWxwb2ludA&fit64=Y3JvcA&fp-x64=MC42&fp-z64=MS4z" sizes="sm:100vw md:50vw lg:400px"##'
+        'abc##width="300" height="200" class="light-img" q="auto=compress%2Cformat&crop64=Zm9jYWxwb2ludA&fit64=Y3JvcA&fp-x64=MC42&fp-z64=MS4z" sizes="sm:100vw md:50vw lg:400px"##'
       )
     ).toEqual({
       alt: 'abc',
@@ -76,7 +61,7 @@ describe('attrsFromAlt()', () => {
   it('should extract attrs with query(encoded)', async () => {
     expect(
       attrsFromAlt(
-        'abc##d:300x200 class="light-img" q="auto=compress%2Cformat&#x26;crop64=Zm9jYWxwb2ludA&#x26;fit64=Y3JvcA&#x26;fp-x64=MC42&#x26;fp-z64=MS4z" sizes="sm:100vw md:50vw lg:400px"##'
+        'abc##width="300" height="200" class="light-img" q="auto=compress%2Cformat&#x26;crop64=Zm9jYWxwb2ludA&#x26;fit64=Y3JvcA&#x26;fp-x64=MC42&#x26;fp-z64=MS4z" sizes="sm:100vw md:50vw lg:400px"##'
       )
     ).toEqual({
       alt: 'abc',
@@ -108,7 +93,7 @@ describe('attrsFromAlt()', () => {
   it('should trhow error when invalid attrs has injected', async () => {
     expect(() =>
       attrsFromAlt(
-        'abc##d:300x200 class="light-img" sizes="sm:100vw md:50vw lg:400px" >##'
+        'abc##width="300" height="200" class="light-img" sizes="sm:100vw md:50vw lg:400px" >##'
       )
     ).toThrowError(
       'attrsFromAlt: Error: extractAttrs: invalid attrs has injected'

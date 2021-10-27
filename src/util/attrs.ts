@@ -179,21 +179,6 @@ export function extractAttrsFromBlock(
   return ret
 }
 
-const dimRegExp = /^d:(\d+)x(\d+)$/m
-function decodeDim(attrs: Properties): Properties {
-  const properties: Properties = {}
-  Object.entries(attrs).forEach(([k, v]) => {
-    const dm = k.match(dimRegExp)
-    if (dm) {
-      properties.width = parseInt(dm[1], 10)
-      properties.height = parseInt(dm[2], 10)
-      return
-    }
-    properties[k] = v
-  })
-  return properties
-}
-
 export function attrsFromAlt(alt: string): AttrsResultFromAlt {
   try {
     const ret: AttrsResultFromAlt = {
@@ -203,7 +188,7 @@ export function attrsFromAlt(alt: string): AttrsResultFromAlt {
 
     const a = extractAttrsFromAlt(alt)
     if (a.extracted) {
-      Object.assign(ret.properties, decodeDim(decodeAttrs(a.attrs)))
+      Object.assign(ret.properties, decodeAttrs(a.attrs))
       ret.alt = `${a.start}${a.end}`
     }
     return ret
@@ -223,7 +208,7 @@ export function attrsFromBlock(
 
     const b = extractAttrsFromBlock(children, startIdx)
     if (b.extracted) {
-      Object.assign(ret.properties, decodeDim(decodeAttrs(b.attrs)))
+      Object.assign(ret.properties, decodeAttrs(b.attrs))
       ret.removeRange = {
         startIdx: b.range[0],
         endIdx: b.range[1],

@@ -21,7 +21,7 @@ describe('cli()', () => {
     io.stderr.on('data', (d) => (errData = errData + d))
     process.nextTick(() => {
       io.stdin.write(
-        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1##class=&#x22;light-img&#x22;##"></p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="##sizes=&#x22;sm:100vw md:50vw lg:400px&#x22;##"></p>'
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1{class=&#x22;light-img&#x22;}"></p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="{sizes=&#x22;sm:100vw md:50vw lg:400px&#x22;}"></p>'
       )
       io.stdin.end()
     })
@@ -65,7 +65,7 @@ describe('cli()', () => {
     io.stderr.on('data', (d) => (errData = errData + d))
     process.nextTick(() => {
       io.stdin.write(
-        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1##class=&#x22;light-img&#x22;##"></p><h2>test2</h2><p>image-salt-2</p><p><img src="https://localhost:3001/path/to/image2.jpg" alt="image2##class=&#x22;light-img&#x22;##"></p>'
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1{class=&#x22;light-img&#x22;}"></p><h2>test2</h2><p>image-salt-2</p><p><img src="https://localhost:3001/path/to/image2.jpg" alt="image2{class=&#x22;light-img&#x22;}"></p>'
       )
       io.stdin.end()
     })
@@ -88,7 +88,7 @@ describe('cli()', () => {
     io.stderr.on('data', (d) => (errData = errData + d))
     process.nextTick(() => {
       io.stdin.write(
-        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1##class=&#x22;light-img&#x22;##"></p>'
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1{class=&#x22;light-img&#x22;}"></p>'
       )
       io.stdin.end()
     })
@@ -113,7 +113,7 @@ describe('cli()', () => {
     io.stderr.on('data', (d) => (errData = errData + d))
     process.nextTick(() => {
       io.stdin.write(
-        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1##class=&#x22;dark-img&#x22; modifiers=&#x22;blur=100&#x22;##"></p>'
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1{class=&#x22;dark-img&#x22; modifiers=&#x22;blur=100&#x22;}"></p>'
       )
       io.stdin.end()
     })
@@ -139,7 +139,7 @@ describe('cli()', () => {
     io.stderr.on('data', (d) => (errData = errData + d))
     process.nextTick(() => {
       io.stdin.write(
-        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1##class=&#x22;dark-img&#x22; modifiers=&#x22;blur=100&#x22;##" width="300" height="200"></p>'
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1{class=&#x22;dark-img&#x22; modifiers=&#x22;blur=100&#x22;}" width="300" height="200"></p>'
       )
       io.stdin.end()
     })
@@ -166,7 +166,7 @@ describe('cli()', () => {
     io.stderr.on('data', (d) => (errData = errData + d))
     process.nextTick(() => {
       io.stdin.write(
-        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1##class=&#x22;light-img&#x22;&gt;##"></p>'
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1{class=&#x22;light-img&#x22;&gt;}"></p>'
       )
       io.stdin.end()
     })

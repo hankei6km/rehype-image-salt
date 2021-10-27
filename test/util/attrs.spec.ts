@@ -7,7 +7,7 @@ import { attrsFromAlt, attrsFromBlock, salt } from '../../src/util/attrs.js'
 describe('attrsFromAlt()', () => {
   it('should extract attrs', async () => {
     expect(
-      attrsFromAlt('abc##class="light-img" sizes="sm:100vw md:50vw lg:400px"##')
+      attrsFromAlt('abc{class="light-img" sizes="sm:100vw md:50vw lg:400px"}')
     ).toEqual({
       alt: 'abc',
       properties: {
@@ -16,7 +16,7 @@ describe('attrsFromAlt()', () => {
       }
     })
     expect(
-      attrsFromAlt('##class="light-img" sizes="sm:100vw md:50vw lg:400px"##ABC')
+      attrsFromAlt('{class="light-img" sizes="sm:100vw md:50vw lg:400px"}ABC')
     ).toEqual({
       alt: 'ABC',
       properties: {
@@ -26,7 +26,7 @@ describe('attrsFromAlt()', () => {
     })
     expect(
       attrsFromAlt(
-        'abc##class="light-img" sizes="sm:100vw md:50vw lg:400px"##ABC'
+        'abc{class="light-img" sizes="sm:100vw md:50vw lg:400px"}ABC'
       )
     ).toEqual({
       alt: 'abcABC',
@@ -37,7 +37,7 @@ describe('attrsFromAlt()', () => {
     })
   })
   it('should extract attrs as enpty', async () => {
-    expect(attrsFromAlt('abc## ##')).toEqual({
+    expect(attrsFromAlt('abc{ }')).toEqual({
       alt: 'abc',
       properties: {}
     })
@@ -45,7 +45,7 @@ describe('attrsFromAlt()', () => {
   it('should extract attrs with query', async () => {
     expect(
       attrsFromAlt(
-        'abc##width="300" height="200" class="light-img" q="auto=compress%2Cformat&crop64=Zm9jYWxwb2ludA&fit64=Y3JvcA&fp-x64=MC42&fp-z64=MS4z" sizes="sm:100vw md:50vw lg:400px"##'
+        'abc{width="300" height="200" class="light-img" q="auto=compress%2Cformat&crop64=Zm9jYWxwb2ludA&fit64=Y3JvcA&fp-x64=MC42&fp-z64=MS4z" sizes="sm:100vw md:50vw lg:400px"}'
       )
     ).toEqual({
       alt: 'abc',
@@ -61,7 +61,7 @@ describe('attrsFromAlt()', () => {
   it('should extract attrs with query(encoded)', async () => {
     expect(
       attrsFromAlt(
-        'abc##width="300" height="200" class="light-img" q="auto=compress%2Cformat&#x26;crop64=Zm9jYWxwb2ludA&#x26;fit64=Y3JvcA&#x26;fp-x64=MC42&#x26;fp-z64=MS4z" sizes="sm:100vw md:50vw lg:400px"##'
+        'abc{width="300" height="200" class="light-img" q="auto=compress%2Cformat&#x26;crop64=Zm9jYWxwb2ludA&#x26;fit64=Y3JvcA&#x26;fp-x64=MC42&#x26;fp-z64=MS4z" sizes="sm:100vw md:50vw lg:400px"}'
       )
     ).toEqual({
       alt: 'abc',
@@ -76,24 +76,24 @@ describe('attrsFromAlt()', () => {
   })
   it('should return just alt', async () => {
     expect(attrsFromAlt('abc')).toEqual({ alt: 'abc', properties: {} })
-    expect(attrsFromAlt('abc##')).toEqual({ alt: 'abc##', properties: {} })
-    expect(attrsFromAlt('abc####')).toEqual({
-      alt: 'abc####',
+    expect(attrsFromAlt('abc{')).toEqual({ alt: 'abc{', properties: {} })
+    expect(attrsFromAlt('abc{}')).toEqual({
+      alt: 'abc{}',
       properties: {}
     })
-    expect(attrsFromAlt('abc##ABC')).toEqual({
-      alt: 'abc##ABC',
+    expect(attrsFromAlt('abc{ABC')).toEqual({
+      alt: 'abc{ABC',
       properties: {}
     })
-    expect(attrsFromAlt('abc####ABC')).toEqual({
-      alt: 'abc####ABC',
+    expect(attrsFromAlt('abc{}ABC')).toEqual({
+      alt: 'abc{}ABC',
       properties: {}
     })
   })
   it('should trhow error when invalid attrs has injected', async () => {
     expect(() =>
       attrsFromAlt(
-        'abc##width="300" height="200" class="light-img" sizes="sm:100vw md:50vw lg:400px" >##'
+        'abc{width="300" height="200" class="light-img" sizes="sm:100vw md:50vw lg:400px" >}'
       )
     ).toThrowError(
       'attrsFromAlt: Error: extractAttrs: invalid attrs has injected'
@@ -225,7 +225,7 @@ describe('salt()', () => {
         },
         { class: 'light-img' }
       )
-    ).toEqual('river##class="light-img"##')
+    ).toEqual('river{class="light-img"}')
   })
   it('should embed "clasName:[]" as "class:string"', async () => {
     expect(
@@ -240,7 +240,7 @@ describe('salt()', () => {
         },
         { className: ['light-img', 'w-full'] }
       )
-    ).toEqual('river##class="light-img w-full"##')
+    ).toEqual('river{class="light-img w-full"}')
   })
   it('should drop undefined', async () => {
     expect(
@@ -255,21 +255,21 @@ describe('salt()', () => {
         },
         { class: ['light-img'], name: undefined }
       )
-    ).toEqual('river##class="light-img"##')
+    ).toEqual('river{class="light-img"}')
   })
   it('should replace embedded', async () => {
     expect(
       salt(
         {
-          source: 'river##class="light-img"## side',
+          source: 'river{class="light-img"} side',
           extracted: true,
-          surrounded: ['##', '##'],
+          surrounded: ['{', '}'],
           start: 'river',
           attrs: 'class="light-img"',
           end: ' side'
         },
         { class: ['light-img'], width: '300', height: '200' }
       )
-    ).toEqual('river##class="light-img" width="300" height="200"## side')
+    ).toEqual('river{class="light-img" width="300" height="200"} side')
   })
 })

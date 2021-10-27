@@ -102,14 +102,14 @@ export function pickAttrs(attrs: Properties, pick: string[]): Properties {
   return ret
 }
 
-const extractAttrsFromAltRegExp = /(^[^#]*)##(.+)##(.*$)/
+const extractAttrsFromAltRegExp = /(^[^{]*){(.+)}(.*$)/
 export function extractAttrsFromAlt(alt: string): ExtractAttrsFromAlt {
   const s = alt.match(extractAttrsFromAltRegExp)
   if (s) {
     return {
       source: alt,
       extracted: true,
-      surrounded: ['##', '##'],
+      surrounded: ['{', '}'],
       start: s[1],
       attrs: s[2],
       end: s[3]
@@ -228,7 +228,7 @@ export function salt(ex: ExtractAttrsFromAlt, propertiess: Properties): string {
     if (ex.extracted) {
       return `${ex.start}${ex.surrounded[0]}${attrText}${ex.surrounded[1]}${ex.end}`
     }
-    return `${ex.source}##${attrText}##`
+    return `${ex.source}{${attrText}}`
   }
   if (ex.extracted) {
     return `${ex.start}${ex.end}`

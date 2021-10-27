@@ -139,13 +139,19 @@ export function extractAttrsFromBlock(
   const len = children.length
   for (let idx = startIdx; idx < len; idx++) {
     const n = children[idx]
+    // block の先頭位置まで移動.
+    // 先頭までにブランクとして許容されるもの.
+    // -先頭の <br>
+    // - [ \n\r\t] の text node
     if (n.type === 'text' && (n as Text).value.indexOf('{') >= 0) {
       // block の開始が含まれている text node
       ret.range[0] = idx
       break
     } else if (
       !(
-        (n.type === 'element' && (n as Element).tagName === 'br') ||
+        (n.type === 'element' &&
+          (n as Element).tagName === 'br' &&
+          idx - startIdx === 0) ||
         (n.type === 'text' &&
           (n as Text).value.match(extractAttrsFromBlockRegTextSkipExp))
       )
@@ -156,6 +162,7 @@ export function extractAttrsFromBlock(
     }
   }
   if (ret.range[0] >= 0) {
+    // block の開始があったので残りを調べる
     let textValue = ''
     for (let idx = ret.range[0]; idx < len; idx++) {
       const n = children[idx]

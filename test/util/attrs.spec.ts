@@ -151,6 +151,18 @@ describe('attrsFromBlock()', () => {
       }
     })
   })
+  it('should skip when blank line is(<br><br>) existed', async () => {
+    expect(
+      attrsFromBlock(
+        f(
+          '<img src="image.jpg"><br><br>{<br>class="light-img" sizes="sm:100vw md:50vw lg:400px"<br>}'
+        ),
+        1
+      )
+    ).toEqual({
+      properties: {}
+    })
+  })
   it('should set range with text value', async () => {
     expect(
       attrsFromBlock(f('<img src="image.jpg">{class="light-img"}text'), 1)

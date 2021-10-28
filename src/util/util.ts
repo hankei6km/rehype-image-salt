@@ -2,8 +2,8 @@ import {
   defaultOpts,
   RehypeImageSaltOptions,
   RehypeImageSaltOptionsNormalized
-} from '../image-salt'
-import { decodeAttrs } from './attrs'
+} from '../image-salt.js'
+import { decodeAttrs } from './attrs.js'
 
 function _normalizeOpts(
   opts: RehypeImageSaltOptions

@@ -56,10 +56,10 @@ describe('rehypeImageSalt rebuild', () => {
   it('should rebuild slibing img by each block', async () => {
     expect(
       await f(
-        '<h1>test</h1><h2>test1</h2><p>image-salt-1<img src="/path/to/image1.jpg" alt="image1">{class="light-img"}image-salt-2<img src="/path/to/image2.jpg" alt="">{ sizes="sm:100vw md:50vw lg:400px"}</p>'
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1<img src="/path/to/image1.jpg" alt="image1">{class="light-img"} <img src="/path/to/image2.jpg" alt="">{ sizes="sm:100vw md:50vw lg:400px"}</p>'
       )
     ).toEqual(
-      '<h1>test</h1><h2>test1</h2><p>image-salt-1<img src="/path/to/image1.jpg" alt="image1" class="light-img">image-salt-2<img src="/path/to/image2.jpg" alt="" sizes="sm:100vw md:50vw lg:400px"></p>'
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1<img src="/path/to/image1.jpg" alt="image1" class="light-img"> <img src="/path/to/image2.jpg" alt="" sizes="sm:100vw md:50vw lg:400px"></p>'
     )
   })
   it('should rebuild img tag with attrs from both alt and block', async () => {

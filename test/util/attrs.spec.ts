@@ -163,24 +163,24 @@ describe('attrsFromBlock()', () => {
       properties: {}
     })
   })
-  it('should set range with text value', async () => {
+  it('should set range with blank text value', async () => {
     expect(
-      attrsFromBlock(f('<img src="image.jpg">{class="light-img"}text'), 1)
+      attrsFromBlock(f('<img src="image.jpg">{class="light-img"}    '), 1)
     ).toEqual({
-      removeRange: { startIdx: 1, endIdx: 1, keepText: 'text', count: 0 },
+      removeRange: { startIdx: 1, endIdx: 1, keepText: '    ', count: 0 },
+      properties: { className: ['light-img'] }
+    })
+    expect(
+      attrsFromBlock(
+        f('<img src="image.jpg">{class="light-img"}     <br>text2'),
+        1
+      )
+    ).toEqual({
+      removeRange: { startIdx: 1, endIdx: 1, keepText: '     ', count: 0 },
       properties: { className: ['light-img'] }
     })
   })
   it('should set range by just block', async () => {
-    expect(
-      attrsFromBlock(
-        f('<img src="image.jpg">{class="light-img"}text1<br>text2'),
-        1
-      )
-    ).toEqual({
-      removeRange: { startIdx: 1, endIdx: 1, keepText: 'text1', count: 0 },
-      properties: { className: ['light-img'] }
-    })
     expect(
       attrsFromBlock(
         f('<img src="image.jpg"><br>{<br>class="light-img"<br>}<br>text'),
@@ -199,11 +199,23 @@ describe('attrsFromBlock()', () => {
       'attrsFromBlock: Error: extractAttrs: invalid attrs has injected'
     )
   })
-  it('should not extract block when can not close block', async () => {
+  it('should not extract block when block is not closed', async () => {
     expect(
       attrsFromBlock(
         f(
           '<img src="image1.jpg"><br>{<br>class="light-img"<br><img src="image2.jpg">'
+        ),
+        1
+      )
+    ).toEqual({
+      properties: {}
+    })
+  })
+  it('should not extract block when exit following text value is not blank', async () => {
+    expect(
+      attrsFromBlock(
+        f(
+          '<img src="image1.jpg"><br>{<br>class="light-img"<br>} following text<img src="image2.jpg">'
         ),
         1
       )
@@ -219,6 +231,22 @@ describe('attrsFromBlock()', () => {
       )
     ).toEqual({
       properties: {}
+    })
+  })
+  it('should describe "{}" in block', async () => {
+    expect(
+      attrsFromBlock(
+        f(
+          '<img src="image.jpg">{class="light-img" :modifiers="{blur:400}"}<br>text'
+        ),
+        1
+      )
+    ).toEqual({
+      removeRange: { startIdx: 1, endIdx: 1, keepText: '', count: 1 },
+      properties: {
+        className: ['light-img'],
+        ':modifiers': '{blur:400}'
+      }
     })
   })
 })

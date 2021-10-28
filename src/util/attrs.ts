@@ -124,7 +124,9 @@ export function extractAttrsFromAlt(alt: string): ExtractAttrsFromAlt {
     end: ''
   }
 }
-const extractAttrsFromBlockRegExp = /^([ \n\r\t]*){([^}]+)}(.*)$/m
+
+const extractAttrsFromBlockStartRegExp = /^[ \n\r\t]*{/m
+const extractAttrsFromBlockRegExp = /^([ \n\r\t]*){(.+)}([ \n\r\t]*)$/ms // block の範囲は最長一致
 const extractAttrsFromBlockRegTextSkipExp = /^[ \n\r\t]*$/m
 export function extractAttrsFromBlock(
   children: Node[],
@@ -139,11 +141,15 @@ export function extractAttrsFromBlock(
   const len = children.length
   for (let idx = startIdx; idx < len; idx++) {
     const n = children[idx]
-    // block の先頭位置まで移動.
+    // block の先頭位置まで移動(移動せずに最初の text node のみにするかも).
     // 先頭までにブランクとして許容されるもの.
-    // -先頭の <br>
+    // - 先頭の <br>
     // - [ \n\r\t] の text node
-    if (n.type === 'text' && (n as Text).value.indexOf('{') >= 0) {
+
+    if (
+      n.type === 'text' &&
+      (n as Text).value.match(extractAttrsFromBlockStartRegExp)
+    ) {
       // block の開始が含まれている text node
       ret.range[0] = idx
       break

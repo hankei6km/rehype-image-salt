@@ -60,18 +60,13 @@ export const defaultOpts: Required<RehypeImageSaltOptions> & {
 }
 
 export const rehypeImageSalt: Plugin<
-  [RehypeImageSaltOptions] | [],
+  [RehypeImageSaltOptions] | [RehypeImageSaltOptions[]] | [],
   string,
   Root
 > = function rehypeImageSalt(
-  opts: RehypeImageSaltOptions = defaultOpts
+  opts: RehypeImageSaltOptions | RehypeImageSaltOptions[] = defaultOpts
 ): Transformer {
-  const {
-    command,
-    baseURL,
-    rebuild: rebuildOpts,
-    embed: embedOpts
-  } = normalizeOpts(opts)
+  const nopts = normalizeOpts(opts)
 
   const visitTest = (node: Node) => {
     if (node.type === 'element' && (node as Element).tagName === 'img') {
@@ -80,7 +75,11 @@ export const rehypeImageSalt: Plugin<
     return false
   }
 
-  const visitorRebuild = (node: Node, parents: Parent[]) => {
+  const visitorRebuild = (
+    { baseURL, rebuild: rebuildOpts }: RehypeImageSaltOptionsNormalized,
+    node: Node,
+    parents: Parent[]
+  ) => {
     const parentsLen = parents.length
     const parent: Parent = parents[parentsLen - 1]
     const imageIdx = parent.children.findIndex((n) => n === node)
@@ -181,7 +180,15 @@ export const rehypeImageSalt: Plugin<
     }
   }
 
-  const visitorEmbed = (node: Node, parents: Parent[]) => {
+  const visitorEmbed = (
+    {
+      baseURL,
+      rebuild: rebuildOpts,
+      embed: embedOpts
+    }: RehypeImageSaltOptionsNormalized,
+    node: Node,
+    parents: Parent[]
+  ) => {
     const parentsLen = parents.length
     const parent: Parent = parents[parentsLen - 1]
     const imageIdx = parent.children.findIndex((n) => n === node)
@@ -253,17 +260,16 @@ export const rehypeImageSalt: Plugin<
     }
   }
 
-  let visitor: (node: Node, parents: Parent[]) => void = (
-    node: Node,
-    parents: Parent[]
-  ) => {}
-  if (command === 'rebuild') {
-    visitor = visitorRebuild
-  } else if (command === 'embed') {
-    visitor = visitorEmbed
-  }
-
   return function transformer(tree: Node): void {
-    visitParents(tree, visitTest, visitor)
+    nopts.forEach((opts) => {
+      const visitor = (node: Node, parents: Parent[]) => {
+        if (opts.command === 'rebuild') {
+          return visitorRebuild(opts, node, parents)
+        } else if (opts.command === 'embed') {
+          return visitorEmbed(opts, node, parents)
+        }
+      }
+      visitParents(tree, visitTest, visitor)
+    })
   }
 }

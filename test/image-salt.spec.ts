@@ -5,7 +5,7 @@ import { rehypeImageSalt, RehypeImageSaltOptions } from '../src/image-salt.js'
 
 const f = async (
   markdown: string,
-  opts?: RehypeImageSaltOptions
+  opts?: RehypeImageSaltOptions | RehypeImageSaltOptions[]
 ): Promise<string> => {
   return await unified()
     .use(rehypeParse, { fragment: true })
@@ -227,6 +227,31 @@ describe('rehypeImageSalt rebuild', () => {
       )
     ).toEqual(
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1">text1{class="light-img"}test2</p>'
+    )
+  })
+  it('should accept array opts', async () => {
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1"></p><h2>test2</h2><p>image-salt-2</p><p><img src="https://localhost:3001/path/to/image2.jpg" alt="image2"></p>',
+        [
+          {
+            baseURL: 'https://localhost:3000/',
+            rebuild: {
+              keepBaseURL: true,
+              baseAttrs: 'class="light-img"'
+            }
+          },
+          {
+            baseURL: 'https://localhost:3001/',
+            rebuild: {
+              keepBaseURL: true,
+              baseAttrs: 'class="dark-img"'
+            }
+          }
+        ]
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1" class="light-img"></p><h2>test2</h2><p>image-salt-2</p><p><img src="https://localhost:3001/path/to/image2.jpg" alt="image2" class="dark-img"></p>'
     )
   })
 })

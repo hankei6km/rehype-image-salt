@@ -42,9 +42,13 @@ function _normalizeOpts(
   return ret
 }
 export function normalizeOpts(
-  opts: RehypeImageSaltOptions
-): RehypeImageSaltOptionsNormalized {
-  return _normalizeOpts(opts)
+  opts: RehypeImageSaltOptions | RehypeImageSaltOptions[]
+): RehypeImageSaltOptionsNormalized[] {
+  if (Array.isArray(opts)) {
+    return opts.map((v) => _normalizeOpts(v))
+  } else {
+    return [_normalizeOpts(opts)]
+  }
 }
 
 export function trimBaseURL(base: string | undefined, url: string): string {

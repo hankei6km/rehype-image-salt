@@ -3,11 +3,9 @@ import { Node } from 'unist'
 // import { Parent, Image, HTML } from 'mdast'
 import { Root, Parent, Element, Properties, Text } from 'hast'
 import { visitParents, CONTINUE, SKIP } from 'unist-util-visit-parents'
-import { toHtml } from 'hast-util-to-html'
 import {
   attrsFromAlt,
   attrsFromBlock,
-  decodeAttrs,
   editAttrs,
   extractAttrsFromAlt,
   pickAttrs,

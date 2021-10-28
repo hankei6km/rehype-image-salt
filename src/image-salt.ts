@@ -17,6 +17,7 @@ import {
 import { editQuery, toModifiers } from './util/query.js'
 import { normalizeOpts, trimBaseURL } from './util/util.js'
 
+const targetTagName = 'img'
 type RehypeImageSaltOptionsRebuild = {
   tagName?: string
   keepBaseURL?: boolean
@@ -49,7 +50,7 @@ export const defaultOpts: Required<RehypeImageSaltOptions> & {
   command: 'rebuild',
   baseURL: '',
   rebuild: {
-    tagName: 'img',
+    tagName: targetTagName,
     keepBaseURL: false,
     baseAttrs: ''
   },
@@ -69,7 +70,10 @@ export const rehypeImageSalt: Plugin<
   const nopts = normalizeOpts(opts)
 
   const visitTest = (node: Node) => {
-    if (node.type === 'element' && (node as Element).tagName === 'img') {
+    if (
+      node.type === 'element' &&
+      (node as Element).tagName === targetTagName
+    ) {
       return true
     }
     return false
@@ -181,11 +185,7 @@ export const rehypeImageSalt: Plugin<
   }
 
   const visitorEmbed = (
-    {
-      baseURL,
-      rebuild: rebuildOpts,
-      embed: embedOpts
-    }: RehypeImageSaltOptionsNormalized,
+    { baseURL, embed: embedOpts }: RehypeImageSaltOptionsNormalized,
     node: Node,
     parents: Parent[]
   ) => {
@@ -216,7 +216,7 @@ export const rehypeImageSalt: Plugin<
       const rebuilded: (Element | Text)[] = [
         {
           type: 'element',
-          tagName: rebuildOpts.tagName,
+          tagName: targetTagName,
           properties: {
             src: imageURL,
             alt:

@@ -15,7 +15,7 @@ import {
   sblock
 } from './util/attrs.js'
 import { editQuery, toModifiers } from './util/query.js'
-import { trimBaseURL } from './util/util.js'
+import { normalizeOpts, trimBaseURL } from './util/util.js'
 
 type RehypeImageSaltOptionsRebuild = {
   tagName?: string
@@ -34,7 +34,15 @@ export type RehypeImageSaltOptions = {
   rebuild?: RehypeImageSaltOptionsRebuild
   embed?: RehypeImageSaltOptionsEmbed
 }
-const defaultOpts: Required<RehypeImageSaltOptions> & {
+export type RehypeImageSaltOptionsNormalized =
+  Required<RehypeImageSaltOptions> & {
+    rebuild: Required<RehypeImageSaltOptionsRebuild> & {
+      baseProperties: Properties
+    }
+    embed: Required<RehypeImageSaltOptionsEmbed>
+  }
+
+export const defaultOpts: Required<RehypeImageSaltOptions> & {
   rebuild: Required<RehypeImageSaltOptionsRebuild>
   embed: Required<RehypeImageSaltOptionsEmbed>
 } = {
@@ -58,38 +66,12 @@ export const rehypeImageSalt: Plugin<
 > = function rehypeImageSalt(
   opts: RehypeImageSaltOptions = defaultOpts
 ): Transformer {
-  const command =
-    opts.command !== undefined ? opts.command : defaultOpts.command
-  const baseURL =
-    opts.baseURL !== undefined ? opts.baseURL : defaultOpts.baseURL
-  const rebuildOpts: Required<RehypeImageSaltOptionsRebuild> = {
-    tagName:
-      opts.rebuild?.tagName !== undefined
-        ? opts.rebuild.tagName
-        : defaultOpts.rebuild.tagName,
-    keepBaseURL:
-      opts.rebuild?.keepBaseURL !== undefined
-        ? opts.rebuild.keepBaseURL
-        : defaultOpts.rebuild.keepBaseURL,
-    baseAttrs:
-      opts.rebuild?.baseAttrs !== undefined
-        ? opts.rebuild.baseAttrs
-        : defaultOpts.rebuild.baseAttrs
-  }
-  const embedOpts: Required<RehypeImageSaltOptionsEmbed> = {
-    embedTo:
-      opts.embed?.embedTo !== undefined
-        ? opts.embed.embedTo
-        : defaultOpts.embed.embedTo,
-    pickAttrs:
-      opts.embed?.pickAttrs !== undefined
-        ? opts.embed.pickAttrs
-        : defaultOpts.embed.pickAttrs
-  }
-
-  const baseProperties = rebuildOpts.baseAttrs
-    ? decodeAttrs(`${rebuildOpts.baseAttrs}`)
-    : {}
+  const {
+    command,
+    baseURL,
+    rebuild: rebuildOpts,
+    embed: embedOpts
+  } = normalizeOpts(opts)
 
   const visitTest = (node: Node) => {
     if (node.type === 'element' && (node as Element).tagName === 'img') {
@@ -118,7 +100,7 @@ export const rehypeImageSalt: Plugin<
       const workProperties: Properties = {}
       Object.assign(
         workProperties,
-        baseProperties,
+        rebuildOpts.baseProperties,
         resFromAlt.properties || {},
         resFromBlock.properties || {}
       )

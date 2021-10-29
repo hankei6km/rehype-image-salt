@@ -21,7 +21,7 @@ describe('normalizeOpts()', () => {
     expect(
       normalizeOpts([
         { command: 'embed', embed: { pickAttrs: ['class'] } },
-        { baseURL: 'https://localhost:3000', rebuild: { tagName: 'nuxt-img' } }
+        { baseURL: 'https://localhost:3000', rebuild: { keepBaseURL: true } }
       ])
     ).toEqual([
       {
@@ -35,7 +35,7 @@ describe('normalizeOpts()', () => {
         baseURL: 'https://localhost:3000',
         rebuild: {
           ...defaultOpts.rebuild,
-          tagName: 'nuxt-img',
+          keepBaseURL: true,
           baseProperties: {}
         }
       }

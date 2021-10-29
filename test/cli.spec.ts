@@ -176,7 +176,6 @@ describe('cli()', () => {
         ...io,
         baseURL: '',
         rebuild: {
-          tagName: '',
           keepBaseURL: false,
           baseAttrs: ''
         },

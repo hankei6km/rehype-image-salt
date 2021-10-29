@@ -16,8 +16,8 @@ import { editQuery, toModifiers } from './util/query.js'
 import { normalizeOpts, trimBaseURL } from './util/util.js'
 
 const targetTagName = 'img'
+const rebuildTagName = 'img'
 type RehypeImageSaltOptionsRebuild = {
-  tagName?: string
   keepBaseURL?: boolean
   baseAttrs?: string
 }
@@ -48,7 +48,6 @@ export const defaultOpts: Required<RehypeImageSaltOptions> & {
   command: 'rebuild',
   baseURL: '',
   rebuild: {
-    tagName: targetTagName,
     keepBaseURL: false,
     baseAttrs: ''
   },
@@ -94,6 +93,7 @@ export const rehypeImageSalt: Plugin<
       const imageAlt =
         typeof image.properties?.alt === 'string' ? image.properties?.alt : ''
       let imageURL = image.properties.src
+      let tagName = rebuildTagName
       let largeImageURL = ''
 
       const resFromAlt = attrsFromAlt(imageAlt)
@@ -117,8 +117,10 @@ export const rehypeImageSalt: Plugin<
         let value = v
         let set = true
         // 特殊な属性の一覧を別に作れないか?
-        // ("d:" 属性も処理が分散している)
-        if (k === 'modifiers') {
+        if (k === 'tagname') {
+          tagName = `${v}`
+          set = false
+        } else if (k === 'modifiers') {
           key = `:${k}`
           value = JSON.stringify(toModifiers(`${v}`))
         } else if (k === 'qq') {
@@ -141,7 +143,7 @@ export const rehypeImageSalt: Plugin<
 
       const imageTag: Element = {
         type: 'element',
-        tagName: rebuildOpts.tagName,
+        tagName: tagName,
         properties: {
           src: imageURL,
           alt: resFromAlt.alt,

@@ -19,11 +19,6 @@ import { CommandNames } from './image-salt.js'
       'Rebuild img tag using attributes embedded in alt',
       (yargs) => {
         return yargs.options({
-          'tag-name': {
-            type: 'string',
-            required: false,
-            description: 'tag name to rebuild img tag'
-          },
           'keep-base-url': {
             type: 'boolean',
             required: false,
@@ -68,7 +63,6 @@ import { CommandNames } from './image-salt.js'
       stderr: process.stderr,
       baseURL: argv['base-url'],
       rebuild: {
-        tagName: argv['tag-name'],
         keepBaseURL: argv['keep-base-url'],
         baseAttrs: argv['base-attrs']
       },

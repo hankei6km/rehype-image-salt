@@ -74,8 +74,7 @@ describe('rehypeImageSalt rebuild', () => {
   it('should rebuild to nuxt-img tag', async () => {
     expect(
       await f(
-        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1"></p>',
-        { rebuild: { tagName: 'nuxt-img' } }
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1{tagname=&#x22;nuxt-img&#x22;}"></p>'
       )
     ).toEqual(
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><nuxt-img src="/path/to/image1.jpg" alt="image1"></nuxt-img></p>'
@@ -84,16 +83,14 @@ describe('rehypeImageSalt rebuild', () => {
   it('should convert(decode) modifiers to :modifiers', async () => {
     expect(
       await f(
-        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1{modifiers=&#x22;blur=100&#x22;}"></p>',
-        { rebuild: { tagName: 'nuxt-img' } }
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1{tagname=&#x22;nuxt-img&#x22; modifiers=&#x22;blur=100&#x22;}"></p>'
       )
     ).toEqual(
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><nuxt-img src="/path/to/image1.jpg" alt="image1" :modifiers="{&#x22;blur&#x22;:&#x22;100&#x22;}"></nuxt-img></p>'
     )
     expect(
       await f(
-        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1">{modifiers="blur=100"}</p>',
-        { rebuild: { tagName: 'nuxt-img' } }
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1">{tagname="nuxt-img" modifiers="blur=100"}</p>'
       )
     ).toEqual(
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><nuxt-img src="/path/to/image1.jpg" alt="image1" :modifiers="{&#x22;blur&#x22;:&#x22;100&#x22;}"></nuxt-img></p>'
@@ -175,10 +172,9 @@ describe('rehypeImageSalt rebuild', () => {
   it('should apply baseAttrs', async () => {
     expect(
       await f(
-        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1{modifiers=&#x22;blur=100&#x22;}"></p>',
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1{tagname=&#x22;nuxt-img&#x22; modifiers=&#x22;blur=100&#x22;}"></p>',
         {
           rebuild: {
-            tagName: 'nuxt-img',
             baseAttrs: 'provider="imgix"'
           }
         }
@@ -190,10 +186,9 @@ describe('rehypeImageSalt rebuild', () => {
   it('should overwrite baseAttrs', async () => {
     expect(
       await f(
-        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1{class=&#x22;dark-img&#x22; modifiers=&#x22;blur=100&#x22;}"></p>',
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1{tagname=&#x22;nuxt-img&#x22; class=&#x22;dark-img&#x22; modifiers=&#x22;blur=100&#x22;}"></p>',
         {
           rebuild: {
-            tagName: 'nuxt-img',
             baseAttrs: 'provider="imgix" class="light-img"'
           }
         }

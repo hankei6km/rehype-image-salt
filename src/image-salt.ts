@@ -13,7 +13,14 @@ import {
   sblock
 } from './util/attrs.js'
 import { editQuery, toModifiers } from './util/query.js'
-import { normalizeOpts, trimBaseURL } from './util/util.js'
+import { customAttrName, normalizeOpts, trimBaseURL } from './util/util.js'
+
+const customAttrPrefix = 'salt'
+const customAttrNameModifiers = 'modifiers'
+// const customAttrNameQueryForce = customAttrName(customAttrPrefix, 'query!')  // '!' は hast の properties の中で扱いが微妙になる(キャメルケースにならない)
+const customAttrNameQueryForce = customAttrName(customAttrPrefix, 'qq')
+const customAttrNameQueryMerge = customAttrName(customAttrPrefix, 'q')
+const customAttrNameThumb = customAttrName(customAttrPrefix, 'thumb')
 
 const targetTagName = 'img'
 type RehypeImageSaltOptionsRebuild = {
@@ -117,17 +124,16 @@ export const rehypeImageSalt: Plugin<
         let value = v
         let set = true
         // 特殊な属性の一覧を別に作れないか?
-        // ("d:" 属性も処理が分散している)
-        if (k === 'modifiers') {
+        if (k === customAttrNameModifiers) {
           key = `:${k}`
           value = JSON.stringify(toModifiers(`${v}`))
-        } else if (k === 'qq') {
+        } else if (k === customAttrNameQueryForce) {
           imageURL = editQuery(baseURL, imageURL, `${v}`, true)
           set = false
-        } else if (k === 'q') {
+        } else if (k === customAttrNameQueryMerge) {
           imageURL = editQuery(baseURL, imageURL, `${v}`, false)
           set = false
-        } else if (k === 'thumb') {
+        } else if (k === customAttrNameThumb) {
           largeImageURL = editQuery(baseURL, imageURL, `${v}`, true)
           set = false
         }

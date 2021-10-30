@@ -1,5 +1,9 @@
 import { defaultOpts } from '../../src/image-salt.js'
-import { normalizeOpts, trimBaseURL } from '../../src/util/util.js'
+import {
+  customAttrName,
+  normalizeOpts,
+  trimBaseURL
+} from '../../src/util/util.js'
 
 describe('normalizeOpts()', () => {
   it('should normalize opts', () => {
@@ -65,6 +69,14 @@ describe('normalizeOpts()', () => {
         }
       }
     ])
+  })
+})
+
+describe('customAttrName()', () => {
+  it('should return custom attr name as camelCase style', () => {
+    expect(customAttrName('salt', 'qq')).toEqual('dataSaltQq')
+    expect(customAttrName('salt', 'q')).toEqual('dataSaltQ')
+    expect(customAttrName('salt', 'thumb')).toEqual('dataSaltThumb')
   })
 })
 

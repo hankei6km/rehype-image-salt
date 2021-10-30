@@ -1,3 +1,4 @@
+import { camelCase } from 'camel-case'
 import {
   defaultOpts,
   RehypeImageSaltOptions,
@@ -49,6 +50,10 @@ export function normalizeOpts(
   } else {
     return [_normalizeOpts(opts)]
   }
+}
+
+export function customAttrName(prefix: string, name: string): string {
+  return camelCase(`data-${prefix}-${name}`)
 }
 
 export function trimBaseURL(base: string | undefined, url: string): string {

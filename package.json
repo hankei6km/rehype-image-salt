@@ -42,6 +42,7 @@
     "csb:test": "npm test -- --runInBand --watchAll"
   },
   "dependencies": {
+    "change-case": "^4.1.2",
     "rehype": "^12.0.0",
     "unified": "^10.1.0",
     "unist-util-visit-parents": "^5.1.0",

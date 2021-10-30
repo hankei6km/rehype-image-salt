@@ -16,6 +16,10 @@ function _normalizeOpts(
     command: opts.command !== undefined ? opts.command : defaultOpts.command,
     baseURL: opts.baseURL !== undefined ? opts.baseURL : defaultOpts.baseURL,
     rebuild: {
+      tagName:
+        opts.rebuild?.tagName !== undefined
+          ? opts.rebuild.tagName
+          : defaultOpts.rebuild.tagName,
       keepBaseURL:
         opts.rebuild?.keepBaseURL !== undefined
           ? opts.rebuild.keepBaseURL

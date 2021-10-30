@@ -18,8 +18,8 @@ import { customAttrName, normalizeOpts, trimBaseURL } from './util/util.js'
 const customAttrPrefix = 'salt'
 const customAttrNameModifiers = 'modifiers'
 // const customAttrNameQueryForce = customAttrName(customAttrPrefix, 'query!')  // '!' は hast の properties の中で扱いが微妙になる(キャメルケースにならない)
-const customAttrNameQueryForce = customAttrName(customAttrPrefix, 'qq')
-const customAttrNameQueryMerge = customAttrName(customAttrPrefix, 'q')
+const customAttrNameQueryForce = customAttrName(customAttrPrefix, 'q')
+const customAttrNameQueryMerge = customAttrName(customAttrPrefix, 'qm')
 const customAttrNameThumb = customAttrName(customAttrPrefix, 'thumb')
 
 const targetTagName = 'img'

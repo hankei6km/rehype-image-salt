@@ -180,6 +180,23 @@ describe('attrsFromBlock()', () => {
       properties: { className: ['light-img'] }
     })
   })
+  it('should set range with fllowing text value', async () => {
+    expect(
+      attrsFromBlock(f('<img src="image.jpg">{class="light-img"}text1'), 1)
+    ).toEqual({
+      removeRange: { startIdx: 1, endIdx: 1, keepText: 'text1', count: 0 },
+      properties: { className: ['light-img'] }
+    })
+    expect(
+      attrsFromBlock(
+        f('<img src="image.jpg">{class="light-img"}text1<br>text2'),
+        1
+      )
+    ).toEqual({
+      removeRange: { startIdx: 1, endIdx: 1, keepText: 'text1', count: 0 },
+      properties: { className: ['light-img'] }
+    })
+  })
   it('should set range by just block', async () => {
     expect(
       attrsFromBlock(
@@ -204,18 +221,6 @@ describe('attrsFromBlock()', () => {
       attrsFromBlock(
         f(
           '<img src="image1.jpg"><br>{<br>class="light-img"<br><img src="image2.jpg">'
-        ),
-        1
-      )
-    ).toEqual({
-      properties: {}
-    })
-  })
-  it('should not extract block when exit following text value is not blank', async () => {
-    expect(
-      attrsFromBlock(
-        f(
-          '<img src="image1.jpg"><br>{<br>class="light-img"<br>} following text<img src="image2.jpg">'
         ),
         1
       )

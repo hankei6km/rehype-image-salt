@@ -1,6 +1,6 @@
 {
   "name": "@hankei6km/rehype-image-salt",
-  "version": "0.1.1-pre.25",
+  "version": "0.1.1-pre.26",
   "description": "Rebuild img tag using attributes embedded in alt",
   "author": "hankei6km <hankei6km@gmail.com> (https://github.com/hankei6km)",
   "license": "MIT",

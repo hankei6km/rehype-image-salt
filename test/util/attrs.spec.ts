@@ -254,6 +254,22 @@ describe('attrsFromBlock()', () => {
       }
     })
   })
+  it('should extract block within &nbsp;', async () => {
+    expect(
+      attrsFromBlock(
+        f(
+          '<img src="image.jpg">{<br> &nbsp;class="light-img" modifiers="blur=400"}<br>text'
+        ),
+        1
+      )
+    ).toEqual({
+      removeRange: { startIdx: 1, endIdx: 3, keepText: '', count: 3 },
+      properties: {
+        className: ['light-img'],
+        modifiers: 'blur=400'
+      }
+    })
+  })
 })
 
 describe('salt()', () => {

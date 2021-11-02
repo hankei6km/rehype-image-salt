@@ -125,9 +125,10 @@ export function extractAttrsFromAlt(alt: string): ExtractAttrsFromAlt {
   }
 }
 
-const extractAttrsFromBlockStartRegExp = /^[ \n\r\t]*{/m
-const extractAttrsFromBlockRegExp = /^([ \n\r\t]*){(.+)}(.*)$/ms // block の範囲は最長一致
-const extractAttrsFromBlockRegTextSkipExp = /^[ \n\r\t]*$/m
+const extractAttrsFromBlockStartRegExp = /^[\s\n\r\t]*{/m
+const extractAttrsFromBlockRegExp =
+  /^([\s\n\r\t]*){[\s\n\r\t]*(.+)[\s\n\r\t]*}(.*)$/ms // block の範囲は最長一致
+const extractAttrsFromBlockRegTextSkipExp = /^[\s\n\r\t]*$/m
 export function extractAttrsFromBlock(
   children: Node[],
   startIdx: number

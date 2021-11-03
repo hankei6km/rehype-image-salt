@@ -254,11 +254,11 @@ describe('attrsFromBlock()', () => {
       }
     })
   })
-  it('should extract block within &nbsp;', async () => {
+  it('should extract block within white space', async () => {
     expect(
       attrsFromBlock(
         f(
-          '<img src="image.jpg">{<br> &nbsp;class="light-img" modifiers="blur=400"}<br>text'
+          '<img src="image.jpg">{width="600"\theight="400"<br> &nbsp;class="light-img" &nbsp;modifiers="blur=400" &ensp;style="display:flex; &emsp;\tjustify-content:center;"}<br>text'
         ),
         1
       )
@@ -266,7 +266,10 @@ describe('attrsFromBlock()', () => {
       removeRange: { startIdx: 1, endIdx: 3, keepText: '', count: 3 },
       properties: {
         className: ['light-img'],
-        modifiers: 'blur=400'
+        width: 600,
+        height: 400,
+        modifiers: 'blur=400',
+        style: 'display:flex;  \tjustify-content:center;'
       }
     })
   })

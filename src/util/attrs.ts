@@ -129,7 +129,6 @@ const extractAttrsFromBlockStartRegExp = /^[\s\n\r\t]*{/m
 const extractAttrsFromBlockRegExp =
   /^([\s\n\r\t]*){[\s\n\r\t]*(.+)[\s\n\r\t]*}(.*)$/ms // block の範囲は最長一致
 const extractAttrsFromBlockRegTextSkipExp = /^[\s\n\r\t]*$/m
-const extractAttrsFromBlockRegRemoveNbsp = /\u00A0/g
 export function extractAttrsFromBlock(
   children: Node[],
   startIdx: number
@@ -181,7 +180,7 @@ export function extractAttrsFromBlock(
           ret.extracted = true
           ret.range[1] = idx
           ret.range[2] = m[3]
-          ret.attrs = m[2].replace(extractAttrsFromBlockRegRemoveNbsp, ' ')
+          ret.attrs = m[2]
           break
         }
       } else if (n.type === 'element' && (n as Element).tagName === 'br') {

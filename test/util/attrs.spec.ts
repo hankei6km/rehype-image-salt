@@ -258,7 +258,7 @@ describe('attrsFromBlock()', () => {
     expect(
       attrsFromBlock(
         f(
-          '<img src="image.jpg">{<br> &nbsp;class="light-img" &nbsp;modifiers="blur=400"}<br>text'
+          '<img src="image.jpg">{<br> &nbsp;class="light-img" modifiers="blur=400"}<br>text'
         ),
         1
       )

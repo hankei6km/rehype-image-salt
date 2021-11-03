@@ -125,10 +125,9 @@ export function extractAttrsFromAlt(alt: string): ExtractAttrsFromAlt {
   }
 }
 
-const extractAttrsFromBlockStartRegExp = /^[\s\n\r\t]*{/m
-const extractAttrsFromBlockRegExp =
-  /^([\s\n\r\t]*){[\s\n\r\t]*(.+)[\s\n\r\t]*}(.*)$/ms // block の範囲は最長一致
-const extractAttrsFromBlockRegTextSkipExp = /^[\s\n\r\t]*$/m
+const extractAttrsFromBlockStartRegExp = /^[\s]*{/m
+const extractAttrsFromBlockRegExp = /^([\s]*){[\s]*(.+)[\s]*}(.*)$/ms // block の範囲は最長一致
+const extractAttrsFromBlockRegTextSkipExp = /^[\s]*$/m
 // &nbsp; &ensp; &emsp; 体裁を整えるために使われそうな white space 的文字.
 // \s だと \t なども含まれるので使わない.
 // (\t を残す意味があるのかは微妙だが)

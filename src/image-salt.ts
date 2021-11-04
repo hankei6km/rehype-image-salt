@@ -1,27 +1,37 @@
 import { Plugin, Transformer } from 'unified'
 import { Node } from 'unist'
 // import { Parent, Image, HTML } from 'mdast'
-import { Root, Parent, Element, Properties } from 'hast'
-import { visitParents } from 'unist-util-visit-parents'
-import { toHtml } from 'hast-util-to-html'
+import { Root, Parent, Element, Properties, Text } from 'hast'
+import { visitParents, CONTINUE, SKIP } from 'unist-util-visit-parents'
 import {
-  attrs,
-  decodeAttrs,
+  attrsFromAlt,
+  attrsFromBlock,
   editAttrs,
-  extractAttrs,
-  piackAttrs,
-  salt
-} from './util/alt-attrs.js'
+  extractAttrsFromAlt,
+  pickAttrs,
+  salt,
+  sblock
+} from './util/attrs.js'
 import { editQuery, toModifiers } from './util/query.js'
-import { trimBaseURL } from './util/util.js'
+import { customAttrName, normalizeOpts, trimBaseURL } from './util/util.js'
 
+const customAttrPrefix = 'salt'
+const customAttrNameModifiers = 'modifiers'
+// const customAttrNameQueryForce = customAttrName(customAttrPrefix, 'query!')  // '!' は hast の properties の中で扱いが微妙になる(キャメルケースにならない)
+const customAttrNameQueryForce = customAttrName(customAttrPrefix, 'q')
+const customAttrNameQueryMerge = customAttrName(customAttrPrefix, 'qm')
+const customAttrNameThumb = customAttrName(customAttrPrefix, 'thumb')
+
+const targetTagName = 'img'
 type RehypeImageSaltOptionsRebuild = {
   tagName?: string
   keepBaseURL?: boolean
   baseAttrs?: string
 }
+export type EmbedTo = 'alt' | 'block'
 type RehypeImageSaltOptionsEmbed = {
-  piackAttrs?: string[]
+  embedTo?: EmbedTo
+  pickAttrs?: string[]
 }
 export type CommandNames = 'rebuild' | 'embed'
 export type RehypeImageSaltOptions = {
@@ -30,66 +40,55 @@ export type RehypeImageSaltOptions = {
   rebuild?: RehypeImageSaltOptionsRebuild
   embed?: RehypeImageSaltOptionsEmbed
 }
-const defaultOpts: Required<RehypeImageSaltOptions> & {
+export type RehypeImageSaltOptionsNormalized =
+  Required<RehypeImageSaltOptions> & {
+    rebuild: Required<RehypeImageSaltOptionsRebuild> & {
+      baseProperties: Properties
+    }
+    embed: Required<RehypeImageSaltOptionsEmbed>
+  }
+
+export const defaultOpts: Required<RehypeImageSaltOptions> & {
   rebuild: Required<RehypeImageSaltOptionsRebuild>
   embed: Required<RehypeImageSaltOptionsEmbed>
 } = {
   command: 'rebuild',
   baseURL: '',
   rebuild: {
-    tagName: 'img',
+    tagName: targetTagName,
     keepBaseURL: false,
     baseAttrs: ''
   },
   embed: {
-    piackAttrs: ['width', 'height']
+    embedTo: 'alt',
+    pickAttrs: ['width', 'height']
   }
 }
 
 export const rehypeImageSalt: Plugin<
-  [RehypeImageSaltOptions] | [],
+  [RehypeImageSaltOptions] | [RehypeImageSaltOptions[]] | [],
   string,
   Root
 > = function rehypeImageSalt(
-  opts: RehypeImageSaltOptions = defaultOpts
+  opts: RehypeImageSaltOptions | RehypeImageSaltOptions[] = defaultOpts
 ): Transformer {
-  const command =
-    opts.command !== undefined ? opts.command : defaultOpts.command
-  const baseURL =
-    opts.baseURL !== undefined ? opts.baseURL : defaultOpts.baseURL
-  const rebuildOpts: Required<RehypeImageSaltOptionsRebuild> = {
-    tagName:
-      opts.rebuild?.tagName !== undefined
-        ? opts.rebuild.tagName
-        : defaultOpts.rebuild.tagName,
-    keepBaseURL:
-      opts.rebuild?.keepBaseURL !== undefined
-        ? opts.rebuild.keepBaseURL
-        : defaultOpts.rebuild.keepBaseURL,
-    baseAttrs:
-      opts.rebuild?.baseAttrs !== undefined
-        ? opts.rebuild.baseAttrs
-        : defaultOpts.rebuild.baseAttrs
-  }
-  const embedOpts: Required<RehypeImageSaltOptionsEmbed> = {
-    piackAttrs:
-      opts.embed?.piackAttrs !== undefined
-        ? opts.embed.piackAttrs
-        : defaultOpts.embed.piackAttrs
-  }
-
-  const baseProperties = rebuildOpts.baseAttrs
-    ? decodeAttrs(`${rebuildOpts.baseAttrs}`)
-    : {}
+  const nopts = normalizeOpts(opts)
 
   const visitTest = (node: Node) => {
-    if (node.type === 'element' && (node as Element).tagName === 'img') {
+    if (
+      node.type === 'element' &&
+      (node as Element).tagName === targetTagName
+    ) {
       return true
     }
     return false
   }
 
-  const visitorRebuild = (node: Node, parents: Parent[]) => {
+  const visitorRebuild = (
+    { baseURL, rebuild: rebuildOpts }: RehypeImageSaltOptionsNormalized,
+    node: Node,
+    parents: Parent[]
+  ) => {
     const parentsLen = parents.length
     const parent: Parent = parents[parentsLen - 1]
     const imageIdx = parent.children.findIndex((n) => n === node)
@@ -99,15 +98,20 @@ export const rehypeImageSalt: Plugin<
       typeof image.properties?.src === 'string' &&
       image.properties.src.startsWith(baseURL)
     ) {
+      const imageAlt =
+        typeof image.properties?.alt === 'string' ? image.properties?.alt : ''
       let imageURL = image.properties.src
       let largeImageURL = ''
 
-      const ex =
-        typeof image.properties?.alt === 'string'
-          ? attrs(image.properties?.alt)
-          : { alt: '' }
+      const resFromAlt = attrsFromAlt(imageAlt)
+      const resFromBlock = attrsFromBlock(parent.children, imageIdx + 1)
       const workProperties: Properties = {}
-      Object.assign(workProperties, baseProperties, ex.properties || {})
+      Object.assign(
+        workProperties,
+        rebuildOpts.baseProperties,
+        resFromAlt.properties || {},
+        resFromBlock.properties || {}
+      )
       const {
         src: _src,
         alt: _alt,
@@ -120,17 +124,16 @@ export const rehypeImageSalt: Plugin<
         let value = v
         let set = true
         // 特殊な属性の一覧を別に作れないか?
-        // ("d:" 属性も処理が分散している)
-        if (k === 'modifiers') {
+        if (k === customAttrNameModifiers) {
           key = `:${k}`
           value = JSON.stringify(toModifiers(`${v}`))
-        } else if (k === 'qq') {
+        } else if (k === customAttrNameQueryForce) {
           imageURL = editQuery(baseURL, imageURL, `${v}`, true)
           set = false
-        } else if (k === 'q') {
+        } else if (k === customAttrNameQueryMerge) {
           imageURL = editQuery(baseURL, imageURL, `${v}`, false)
           set = false
-        } else if (k === 'thumb') {
+        } else if (k === customAttrNameThumb) {
           largeImageURL = editQuery(baseURL, imageURL, `${v}`, true)
           set = false
         }
@@ -147,7 +150,7 @@ export const rehypeImageSalt: Plugin<
         tagName: rebuildOpts.tagName,
         properties: {
           src: imageURL,
-          alt: ex.alt,
+          alt: resFromAlt.alt,
           ...properties
         },
         children: []
@@ -166,11 +169,30 @@ export const rehypeImageSalt: Plugin<
         }
         rebuilded = largeImageTag
       }
+      if (resFromBlock.removeRange) {
+        const textValue = resFromBlock.removeRange.keepText
+        parent.children.splice(
+          resFromBlock.removeRange.startIdx,
+          resFromBlock.removeRange.count
+        )
+        if (
+          textValue &&
+          parent.children[resFromBlock.removeRange.endIdx].type === 'text' // 念のため.
+        ) {
+          ;(parent.children[resFromBlock.removeRange.endIdx] as Text).value =
+            textValue
+        }
+      }
       parent.children[imageIdx] = rebuilded
+      return SKIP // サムネイル化で <a> の children になるので.
     }
   }
 
-  const visitorEmbed = (node: Node, parents: Parent[]) => {
+  const visitorEmbed = (
+    { baseURL, embed: embedOpts }: RehypeImageSaltOptionsNormalized,
+    node: Node,
+    parents: Parent[]
+  ) => {
     const parentsLen = parents.length
     const parent: Parent = parents[parentsLen - 1]
     const imageIdx = parent.children.findIndex((n) => n === node)
@@ -184,39 +206,74 @@ export const rehypeImageSalt: Plugin<
         typeof image.properties?.alt === 'string' ? image.properties?.alt : ''
       const imageProperties = image.properties || {}
 
-      const ra = imageAlt ? attrs(imageAlt) : { alt: '' }
-      const picked = piackAttrs(imageProperties, embedOpts.piackAttrs)
+      const resFromAlt = attrsFromAlt(imageAlt)
+      const resFromBlock = attrsFromBlock(parent.children, imageIdx + 1)
+      const workProperties: Properties = {}
+      Object.assign(
+        workProperties,
+        resFromAlt.properties || {},
+        resFromBlock.properties || {}
+      )
+      const picked = pickAttrs(imageProperties, embedOpts.pickAttrs)
 
       const { src: imageURL, alt: _alt, ...others } = imageProperties
-      const imageTag: Element = {
-        type: 'element',
-        tagName: rebuildOpts.tagName,
-        properties: {
-          src: imageURL,
-          alt: salt(
-            extractAttrs(imageAlt),
-            editAttrs(ra.properties || {}, picked)
-          ),
-          ...others
-        },
-        children: []
+      const rebuilded: (Element | Text)[] = [
+        {
+          type: 'element',
+          tagName: targetTagName,
+          properties: {
+            src: imageURL,
+            alt:
+              embedOpts.embedTo === 'alt'
+                ? salt(
+                    extractAttrsFromAlt(imageAlt),
+                    editAttrs(workProperties, picked)
+                  )
+                : salt(extractAttrsFromAlt(imageAlt), {}),
+            ...others
+          },
+          children: []
+        }
+      ]
+      if (embedOpts.embedTo === 'block') {
+        const value = sblock(editAttrs(workProperties, picked))
+        if (value) {
+          rebuilded.push({
+            type: 'text',
+            value
+          })
+        }
       }
-      let rebuilded: Element = imageTag
-      parent.children[imageIdx] = rebuilded
+
+      if (resFromBlock.removeRange) {
+        const textValue = resFromBlock.removeRange.keepText
+        parent.children.splice(
+          resFromBlock.removeRange.startIdx,
+          resFromBlock.removeRange.count
+        )
+        if (
+          textValue &&
+          parent.children[resFromBlock.removeRange.endIdx].type === 'text' // 念のため.
+        ) {
+          ;(parent.children[resFromBlock.removeRange.endIdx] as Text).value =
+            textValue
+        }
+      }
+      parent.children.splice(imageIdx, 1, ...rebuilded)
+      return
     }
   }
 
-  let visitor: (node: Node, parents: Parent[]) => void = (
-    node: Node,
-    parents: Parent[]
-  ) => {}
-  if (command === 'rebuild') {
-    visitor = visitorRebuild
-  } else if (command === 'embed') {
-    visitor = visitorEmbed
-  }
-
   return function transformer(tree: Node): void {
-    visitParents(tree, visitTest, visitor)
+    nopts.forEach((opts) => {
+      const visitor = (node: Node, parents: Parent[]) => {
+        if (opts.command === 'rebuild') {
+          return visitorRebuild(opts, node, parents)
+        } else if (opts.command === 'embed') {
+          return visitorEmbed(opts, node, parents)
+        }
+      }
+      visitParents(tree, visitTest, visitor)
+    })
   }
 }

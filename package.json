@@ -1,6 +1,6 @@
 {
   "name": "@hankei6km/rehype-image-salt",
-  "version": "0.1.1-pre.9",
+  "version": "0.1.1-pre.27",
   "description": "Rebuild img tag using attributes embedded in alt",
   "author": "hankei6km <hankei6km@gmail.com> (https://github.com/hankei6km)",
   "license": "MIT",
@@ -42,6 +42,7 @@
     "csb:test": "npm test -- --runInBand --watchAll"
   },
   "dependencies": {
+    "change-case": "^4.1.2",
     "rehype": "^12.0.0",
     "unified": "^10.1.0",
     "unist-util-visit-parents": "^5.1.0",

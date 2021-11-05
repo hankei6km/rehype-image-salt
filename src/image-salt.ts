@@ -8,6 +8,7 @@ import {
   attrsFromBlock,
   editAttrs,
   extractAttrsFromAlt,
+  mergeAttrs,
   pickAttrs,
   salt,
   sblock
@@ -105,9 +106,14 @@ export const rehypeImageSalt: Plugin<
 
       const resFromAlt = attrsFromAlt(imageAlt)
       const resFromBlock = attrsFromBlock(parent.children, imageIdx + 1)
-      const workProperties: Properties = {}
-      Object.assign(
-        workProperties,
+      // const workProperties: Properties = {}
+      // Object.assign(
+      //   workProperties,
+      //   rebuildOpts.baseProperties,
+      //   resFromAlt.properties || {},
+      //   resFromBlock.properties || {}
+      // )
+      const workProperties: Properties = mergeAttrs(
         rebuildOpts.baseProperties,
         resFromAlt.properties || {},
         resFromBlock.properties || {}

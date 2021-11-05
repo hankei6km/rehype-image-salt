@@ -54,6 +54,11 @@ export function editQuery(
   return url
 }
 
+export function encodeQuery(params: Record<string, any>): string {
+  const q = new URLSearchParams(params) // base64 にはしない.
+  return q.toString()
+}
+
 const b64variantRegExp = /^(.+)64$/
 export function toModifiers(query: string): Record<string, any> {
   const ret: Record<string, any> = {}

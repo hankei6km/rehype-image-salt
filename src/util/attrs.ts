@@ -3,7 +3,7 @@ import { fromParse5 } from 'hast-util-from-parse5'
 import { Element, Properties, Text } from 'hast'
 import { Node } from 'unist'
 import { toHtml } from 'hast-util-to-html'
-import { encodeQuery, toModifiers } from './query'
+import { encodeQuery, toModifiers } from './query.js'
 
 // const fenceStart = '##'
 // const fenceEnd = '##'

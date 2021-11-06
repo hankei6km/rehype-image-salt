@@ -3,6 +3,7 @@ import { fromParse5 } from 'hast-util-from-parse5'
 import { Element, Properties, Text } from 'hast'
 import { Node } from 'unist'
 import { toHtml } from 'hast-util-to-html'
+import { encodeQuery, toModifiers } from './query.js'
 
 // const fenceStart = '##'
 // const fenceEnd = '##'
@@ -87,6 +88,25 @@ export function editAttrs(
       ret[k] = attrs[k]
     }
   })
+  return ret
+}
+
+// TODO: editAttrs と内容がかぶる.
+// TODO: modifiers を展開して戻すのは効率悪い(が、Properties の型的に展開しっぱないにもできない).
+export function mergeAttrs(...properties: Properties[]): Properties {
+  const ret: Properties = {}
+  Object.assign(ret, ...properties) // modifiers も含まれるが後から上書きする.
+  const modifiers = encodeQuery(
+    Object.assign(
+      {},
+      ...properties.map(({ modifiers }) => ({
+        ...toModifiers((modifiers || '') as string)
+      }))
+    )
+  )
+  if (modifiers) {
+    ret.modifiers = modifiers
+  }
   return ret
 }
 

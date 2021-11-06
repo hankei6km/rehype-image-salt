@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`cli() should apply baseAttrs 1`] = `"<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src=\\"https://localhost:3000/path/to/image1.jpg\\" alt=\\"image1\\" provider=\\"imgix\\" class=\\"dark-img\\" :modifiers=\\"{&#x22;blur&#x22;:&#x22;100&#x22;}\\"></p>"`;
+exports[`cli() should apply baseAttrs 1`] = `"<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src=\\"https://localhost:3000/path/to/image1.jpg\\" alt=\\"image1\\" provider=\\"imgix\\" class=\\"rounded dark-img\\" :modifiers=\\"{&#x22;blur&#x22;:&#x22;100&#x22;}\\"></p>"`;
 
 exports[`cli() should keep baseURL 1`] = `"<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src=\\"https://localhost:3000/path/to/image1.jpg\\" alt=\\"image1\\" class=\\"light-img\\"></p>"`;
 

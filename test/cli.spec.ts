@@ -124,7 +124,7 @@ describe('cli()', () => {
         baseURL: 'https://localhost:3000/',
         rebuild: {
           keepBaseURL: true,
-          baseAttrs: 'provider="imgix" class="light-img"'
+          baseAttrs: 'provider="imgix" class="rounded"'
         },
         embed: {}
       })

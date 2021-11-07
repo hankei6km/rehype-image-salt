@@ -95,7 +95,8 @@ export function editAttrs(
 // TODO: modifiers を展開して戻すのは効率悪い(が、Properties の型的に展開しっぱないにもできない).
 export function mergeAttrs(...properties: Properties[]): Properties {
   const ret: Properties = {}
-  Object.assign(ret, ...properties) // modifiers も含まれるが後から上書きする.
+  Object.assign(ret, ...properties) // modifiers 等も含まれるが後から上書きする.
+
   const modifiers = encodeQuery(
     Object.assign(
       {},
@@ -107,6 +108,23 @@ export function mergeAttrs(...properties: Properties[]): Properties {
   if (modifiers) {
     ret.modifiers = modifiers
   }
+  const classNameSet = properties.reduce((s, { className: c }) => {
+    if (Array.isArray(c)) {
+      const className = c.filter((v) => !`${v}`.startsWith('-'))
+      className.forEach((c) => {
+        s.add(c)
+      })
+      const notClassName = c.filter((v) => `${v}`.startsWith('-'))
+      notClassName.forEach((n) => {
+        s.delete((n as string).slice(1))
+      })
+    }
+    return s
+  }, new Set())
+  if (classNameSet.size > 0) {
+    ret.className = [...classNameSet.values()] as string[]
+  }
+
   return ret
 }
 

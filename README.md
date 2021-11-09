@@ -1,13 +1,17 @@
 # rehype-image-salt
 
-alt に埋め込まれた属性を使用して img タグを再構築する。
+[rehype](https://github.com/rehypejs/rehype) plugin that rebuild `<img>` tag to next-image etc. using attributes embedded in alt etc.
 
-## 利用方法
+## Features
 
-実装中。
+- Simply write [nuxt-image](https://image.nuxtjs.org/) tags in markdown for [nuxt-content](https://content.nuxtjs.org/)
+- Set `:modifiers` as query parameters
+- Unify the style of all images in the content by base attributes
+- Save any attributes of img tag when converting format from HTML to Markdown
 
+[📖 Read the document](https://hankei6km.github.io/rehype-image-salt-doc/en/)
 
-## ライセンス
+## License
 
 MIT License
 

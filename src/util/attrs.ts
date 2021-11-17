@@ -24,12 +24,12 @@ export type ExtractAttrsFromBlock = {
   attrs: string
 }
 
-type AttrsResultFromAlt = {
+export type AttrsResultFromAlt = {
   alt: string
   properties?: Properties
 }
 
-type AttrsResultFromBlock = {
+export type AttrsResultFromBlock = {
   removeRange?: {
     startIdx: number
     endIdx: number

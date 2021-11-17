@@ -6,6 +6,7 @@ import { visitParents, CONTINUE, SKIP } from 'unist-util-visit-parents'
 import {
   attrsFromAlt,
   attrsFromBlock,
+  AttrsResultFromBlock,
   editAttrs,
   extractAttrsFromAlt,
   mergeAttrs,
@@ -100,9 +101,10 @@ export const rehypeImageSalt: Plugin<
   ) => {
     const parentsLen = parents.length
     const parent: Parent = parents[parentsLen - 1]
+    const childrenLen = parent.children.length
     const imageIdx = parent.children.findIndex((n) => n === node)
     const image: Element = node as Element
-    let slibingP: [Element, number] | undefined = undefined // block が取得されなかったときに算出.
+    let slibingP: [Element, number] | undefined = undefined // block の取得時に算出.
 
     if (
       typeof image.properties?.src === 'string' &&
@@ -114,16 +116,15 @@ export const rehypeImageSalt: Plugin<
       let largeImageURL = ''
 
       const resFromAlt = attrsFromAlt(imageAlt)
-      let resFromBlock = attrsFromBlock(parent.children, imageIdx + 1)
-      if (
-        resFromBlock.removeRange === undefined &&
-        (resFromBlock.properties === undefined ||
-          Object.keys(resFromBlock.properties).length === 0)
-      ) {
+      let resFromBlock: AttrsResultFromBlock = {}
+      if (imageIdx === childrenLen - 1) {
+        // image が末尾のときは slibing の paragraph を利用.
         slibingP = slibingParagraph(parents)
         if (slibingP) {
           resFromBlock = attrsFromBlock(slibingP[0].children, 0)
         }
+      } else {
+        resFromBlock = attrsFromBlock(parent.children, imageIdx + 1)
       }
       // const workProperties: Properties = {}
       // Object.assign(

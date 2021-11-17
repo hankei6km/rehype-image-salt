@@ -101,6 +101,15 @@ describe('rehypeImageSalt rebuild', () => {
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" class="light-img"></p>\n<h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="" sizes="sm:100vw md:50vw lg:400px"></p>'
     )
   })
+  it('should skip decode attributes from slibingp aragrapgh when node is exist bettween image and slibing', async () => {
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1">text</p><p>{class="light-img"}</p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="">{ sizes="sm:100vw md:50vw lg:400px"}</p>'
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1">text</p><p>{class="light-img"}</p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="" sizes="sm:100vw md:50vw lg:400px"></p>'
+    )
+  })
   it('should rebuild slibing img by each block', async () => {
     expect(
       await f(

@@ -233,6 +233,7 @@ export const rehypeImageSalt: Plugin<
         ) {
           ;(children[resFromBlock.removeRange.endIdx] as Text).value = textValue
         }
+        // slibing の paragraph との間に white space 的な text node が存在していても除去しない.
         if (children.length === 0 && slibingP) {
           // slibing の paragraph が空になった場合は除去する(rehype-split-paragraph を使う?)
           parents[parentsLen - 2].children.splice(slibingP[1], 1)

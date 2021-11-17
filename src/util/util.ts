@@ -86,20 +86,29 @@ export function fitToMax(
   return ret
 }
 
+const slibingParagraphTextSkipRegExp = /^[\s]*$/
 export function slibingParagraph(
   parents: Parent[]
 ): [Element, number] | undefined {
   const plen = parents.length
   if (plen > 1) {
-    const childrenInParent2 = parents[plen - 2].children
-    const l = childrenInParent2.length
-    const parentIdx = childrenInParent2.findIndex(
-      (n) => n === parents[plen - 1]
-    )
-    if (parentIdx >= 0 && parentIdx + 1 < l) {
-      const s = parents[plen - 2].children[parentIdx + 1]
-      if (s.type === 'element' && s.tagName === 'p') {
-        return [s as Element, parentIdx + 1]
+    const parent = parents[plen - 1]
+    const parent2 = parents[plen - 2]
+    const childrenInParent2 = parent2.children
+    const parentIdx = childrenInParent2.findIndex((n) => n === parent)
+    if (parentIdx >= 0) {
+      const l = childrenInParent2.length
+      for (let idx = parentIdx + 1; idx < l; idx++) {
+        const s = parent2.children[idx]
+        if (s.type === 'element' && s.tagName === 'p') {
+          return [s as Element, idx]
+        } else if (
+          s.type === 'text' &&
+          s.value.match(slibingParagraphTextSkipRegExp)
+        ) {
+        } else {
+          return undefined
+        }
       }
     }
   }

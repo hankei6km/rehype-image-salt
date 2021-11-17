@@ -155,6 +155,27 @@ describe('slibingParagraph()', () => {
       },
       2
     ])
+    expect(
+      slibingParagraph([
+        {
+          type: 'element',
+          children: [
+            { type: 'element', tagName: 'p', children: [] },
+            curNode,
+            { type: 'text', value: '\n \u00A0' }, // <= これは飛ばされる.
+            { type: 'element', tagName: 'p', children: [] } // <= これが目的の node.
+          ]
+        },
+        curNode
+      ])
+    ).toEqual([
+      {
+        type: 'element',
+        tagName: 'p',
+        children: []
+      },
+      3
+    ])
   })
   it('should return undefined', async () => {
     const curNode: Element = {
@@ -188,6 +209,20 @@ describe('slibingParagraph()', () => {
             { type: 'element', tagName: 'p', children: [] },
             curNode,
             { type: 'element', tagName: 'div', children: [] } // <= p でない.
+          ]
+        },
+        curNode
+      ])
+    ).toEqual(undefined)
+    expect(
+      slibingParagraph([
+        {
+          type: 'element',
+          children: [
+            { type: 'element', tagName: 'p', children: [] },
+            curNode,
+            { type: 'text', value: '\n \n \u00A0text' }, // <= white space 的なテキストでない.
+            { type: 'element', tagName: 'p', children: [] }
           ]
         },
         curNode

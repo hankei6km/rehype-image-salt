@@ -18,6 +18,7 @@ import {
   customAttrName,
   fitToMax,
   normalizeOpts,
+  slibingParagraph,
   trimBaseURL
 } from './util/util.js'
 
@@ -101,6 +102,7 @@ export const rehypeImageSalt: Plugin<
     const parent: Parent = parents[parentsLen - 1]
     const imageIdx = parent.children.findIndex((n) => n === node)
     const image: Element = node as Element
+    let slibingP: [Element, number] | undefined = undefined // block が取得されなかったときに算出.
 
     if (
       typeof image.properties?.src === 'string' &&
@@ -112,7 +114,17 @@ export const rehypeImageSalt: Plugin<
       let largeImageURL = ''
 
       const resFromAlt = attrsFromAlt(imageAlt)
-      const resFromBlock = attrsFromBlock(parent.children, imageIdx + 1)
+      let resFromBlock = attrsFromBlock(parent.children, imageIdx + 1)
+      if (
+        resFromBlock.removeRange === undefined &&
+        (resFromBlock.properties === undefined ||
+          Object.keys(resFromBlock.properties).length === 0)
+      ) {
+        slibingP = slibingParagraph(parents)
+        if (slibingP) {
+          resFromBlock = attrsFromBlock(slibingP[0].children, 0)
+        }
+      }
       // const workProperties: Properties = {}
       // Object.assign(
       //   workProperties,
@@ -206,16 +218,24 @@ export const rehypeImageSalt: Plugin<
       }
       if (resFromBlock.removeRange) {
         const textValue = resFromBlock.removeRange.keepText
-        parent.children.splice(
+        const children =
+          slibingP === undefined
+            ? parent.children
+            : (parents[parentsLen - 2].children[slibingP[1]] as Element)
+                .children // parent の slibing の paragraph を対象に除去する.
+        children.splice(
           resFromBlock.removeRange.startIdx,
           resFromBlock.removeRange.count
         )
         if (
           textValue &&
-          parent.children[resFromBlock.removeRange.endIdx].type === 'text' // 念のため.
+          children[resFromBlock.removeRange.endIdx].type === 'text' // 念のため.
         ) {
-          ;(parent.children[resFromBlock.removeRange.endIdx] as Text).value =
-            textValue
+          ;(children[resFromBlock.removeRange.endIdx] as Text).value = textValue
+        }
+        if (children.length === 0 && slibingP) {
+          // slibing の paragraph が空になった場合は除去する(rehype-split-paragraph を使う?)
+          parents[parentsLen - 2].children.splice(slibingP[1], 1)
         }
       }
       parent.children[imageIdx] = rebuilded

@@ -1,8 +1,10 @@
+import { Element, Parent } from 'hast'
 import { defaultOpts } from '../../src/image-salt.js'
 import {
   customAttrName,
   fitToMax,
   normalizeOpts,
+  slibingParagraph,
   trimBaseURL
 } from '../../src/util/util.js'
 
@@ -117,5 +119,79 @@ describe('fitToMax()', () => {
       undefined,
       undefined
     ])
+  })
+})
+
+describe('slibingParagraph()', () => {
+  it('should return slibing paragraph', async () => {
+    const curNode: Element = {
+      type: 'element',
+      tagName: 'p',
+      children: [
+        {
+          type: 'element',
+          tagName: 'img',
+          children: []
+        }
+      ] as Element[]
+    }
+    expect(
+      slibingParagraph([
+        {
+          type: 'element',
+          children: [
+            { type: 'element', tagName: 'p', children: [] },
+            curNode,
+            { type: 'element', tagName: 'p', children: [] } // <= これが目的の node.
+          ]
+        },
+        curNode
+      ])
+    ).toEqual([
+      {
+        type: 'element',
+        tagName: 'p',
+        children: []
+      },
+      2
+    ])
+  })
+  it('should return undefined', async () => {
+    const curNode: Element = {
+      type: 'element',
+      tagName: 'p',
+      children: [
+        {
+          type: 'element',
+          tagName: 'img',
+          children: []
+        }
+      ] as Element[]
+    }
+    expect(
+      slibingParagraph([
+        {
+          type: 'element',
+          children: [
+            { type: 'element', tagName: 'p', children: [] },
+            curNode // <= 次の node が存在しない.
+          ]
+        },
+        curNode
+      ])
+    ).toEqual(undefined)
+    expect(
+      slibingParagraph([
+        {
+          type: 'element',
+          children: [
+            { type: 'element', tagName: 'p', children: [] },
+            curNode,
+            { type: 'element', tagName: 'div', children: [] } // <= p でない.
+          ]
+        },
+        curNode
+      ])
+    ).toEqual(undefined)
   })
 })

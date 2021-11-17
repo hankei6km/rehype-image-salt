@@ -1,5 +1,5 @@
 import { camelCase } from 'camel-case'
-import { Properties } from 'hast'
+import { Element, Parent, Properties } from 'hast'
 import {
   defaultOpts,
   RehypeImageSaltOptions,
@@ -84,4 +84,24 @@ export function fitToMax(
     }
   }
   return ret
+}
+
+export function slibingParagraph(
+  parents: Parent[]
+): [Element, number] | undefined {
+  const plen = parents.length
+  if (plen > 1) {
+    const childrenInParent2 = parents[plen - 2].children
+    const l = childrenInParent2.length
+    const parentIdx = childrenInParent2.findIndex(
+      (n) => n === parents[plen - 1]
+    )
+    if (parentIdx >= 0 && parentIdx + 1 < l) {
+      const s = parents[plen - 2].children[parentIdx + 1]
+      if (s.type === 'element' && s.tagName === 'p') {
+        return [s as Element, parentIdx + 1]
+      }
+    }
+  }
+  return undefined
 }

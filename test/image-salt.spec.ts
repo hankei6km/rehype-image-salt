@@ -108,6 +108,52 @@ describe('rehypeImageSalt rebuild', () => {
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><nuxt-img src="/path/to/image1.jpg" alt="image1" :modifiers="{&#x22;blur&#x22;:&#x22;100&#x22;}"></nuxt-img></p>'
     )
   })
+  it('should fit to data-salt-max-* attributes', async () => {
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="4000" height="2000"></p>',
+        { rebuild: { baseAttrs: 'data-salt-max-w="600"' } }
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="600" height="300"></p>'
+    )
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="100" height="50"></p>',
+        { rebuild: { baseAttrs: 'data-salt-max-w="600"' } }
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="100" height="50"></p>'
+    )
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="4000" height="2000"></p>',
+        { rebuild: { baseAttrs: 'data-salt-max-h="600"' } }
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="1200" height="600"></p>'
+    )
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="4000" height="2000"></p>',
+        {
+          rebuild: { baseAttrs: 'data-salt-max-w="600" data-salt-max-h="200"' }
+        }
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="400" height="200"></p>'
+    )
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="4000" height="2000"></p>',
+        {
+          rebuild: { baseAttrs: 'data-salt-max-w="2000" data-salt-max-h="600"' }
+        }
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="1200" height="600"></p>'
+    )
+  })
   it('should replace query parameter', async () => {
     expect(
       await f(

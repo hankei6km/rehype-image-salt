@@ -14,10 +14,17 @@ import {
   sblock
 } from './util/attrs.js'
 import { editQuery, toModifiers } from './util/query.js'
-import { customAttrName, normalizeOpts, trimBaseURL } from './util/util.js'
+import {
+  customAttrName,
+  fitToMax,
+  normalizeOpts,
+  trimBaseURL
+} from './util/util.js'
 
 const customAttrPrefix = 'salt'
 const customAttrNameModifiers = 'modifiers'
+const customAttrNameMaxWidth = customAttrName(customAttrPrefix, 'max-w')
+const customAttrNameMaxHeight = customAttrName(customAttrPrefix, 'max-h')
 // const customAttrNameQueryForce = customAttrName(customAttrPrefix, 'query!')  // '!' は hast の properties の中で扱いが微妙になる(キャメルケースにならない)
 const customAttrNameQueryForce = customAttrName(customAttrPrefix, 'q')
 const customAttrNameQueryMerge = customAttrName(customAttrPrefix, 'qm')
@@ -133,6 +140,12 @@ export const rehypeImageSalt: Plugin<
         if (k === customAttrNameModifiers) {
           key = `:${k}`
           value = JSON.stringify(toModifiers(`${v}`))
+        } else if (k === customAttrNameMaxWidth) {
+          // リサイズはループの後で行う.
+          set = false
+        } else if (k === customAttrNameMaxHeight) {
+          // リサイズはループの後で行う.
+          set = false
         } else if (k === customAttrNameQueryForce) {
           imageURL = editQuery(baseURL, imageURL, `${v}`, true)
           set = false
@@ -149,6 +162,22 @@ export const rehypeImageSalt: Plugin<
       })
       if (!rebuildOpts.keepBaseURL) {
         imageURL = trimBaseURL(baseURL, imageURL)
+      }
+      if (typeof workProperties[customAttrNameMaxWidth] === 'string') {
+        const d = fitToMax(
+          [properties.width, properties.height],
+          workProperties[customAttrNameMaxWidth]
+        )
+        properties.width = d[0]
+        properties.height = d[1]
+      }
+      if (typeof workProperties[customAttrNameMaxHeight] === 'string') {
+        const d = fitToMax(
+          [properties.height, properties.width],
+          workProperties[customAttrNameMaxHeight]
+        )
+        properties.width = d[1]
+        properties.height = d[0]
       }
 
       const imageTag: Element = {

@@ -1,4 +1,5 @@
 import { camelCase } from 'camel-case'
+import { Properties } from 'hast'
 import {
   defaultOpts,
   RehypeImageSaltOptions,
@@ -65,4 +66,22 @@ export function trimBaseURL(base: string | undefined, url: string): string {
     return t
   }
   return url
+}
+
+type PropValue = Properties['PropertyName']
+export function fitToMax(
+  d: [PropValue, PropValue],
+  m: unknown
+): [PropValue, PropValue] {
+  const ret: [PropValue, PropValue] = [d[0], d[1]]
+  if (typeof m === 'string' && typeof d[0] === 'number') {
+    const mn = Number.parseInt(m, 10)
+    if (!Number.isNaN(mn) && d[0] > mn) {
+      ret[0] = mn
+      if (typeof d[1] === 'number') {
+        ret[1] = Math.round((d[1] * mn) / d[0])
+      }
+    }
+  }
+  return ret
 }

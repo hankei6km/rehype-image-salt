@@ -1,5 +1,5 @@
 import { camelCase } from 'camel-case'
-import { Properties } from 'hast'
+import { Element, Parent, Properties } from 'hast'
 import {
   defaultOpts,
   RehypeImageSaltOptions,
@@ -84,4 +84,33 @@ export function fitToMax(
     }
   }
   return ret
+}
+
+const slibingParagraphTextSkipRegExp = /^[\s]*$/
+export function slibingParagraph(
+  parents: Parent[]
+): [Element, number, number] | undefined {
+  const plen = parents.length
+  if (plen > 1) {
+    const parent = parents[plen - 1]
+    const parent2 = parents[plen - 2]
+    const childrenInParent2 = parent2.children
+    const parentIdx = childrenInParent2.findIndex((n) => n === parent)
+    if (parentIdx >= 0) {
+      const l = childrenInParent2.length
+      for (let idx = parentIdx + 1; idx < l; idx++) {
+        const s = parent2.children[idx]
+        if (s.type === 'element' && s.tagName === 'p') {
+          return [s as Element, parentIdx + 1, idx] // [対象の node, 親の中での親のidx +1 ,対象の idx ]
+        } else if (
+          s.type === 'text' &&
+          s.value.match(slibingParagraphTextSkipRegExp)
+        ) {
+        } else {
+          return undefined
+        }
+      }
+    }
+  }
+  return undefined
 }

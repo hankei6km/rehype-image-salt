@@ -76,7 +76,9 @@ export function fitToMax(
   const ret: [PropValue, PropValue] = [d[0], d[1]]
   if (typeof m === 'string' && typeof d[0] === 'number') {
     const mn = Number.parseInt(m, 10)
-    if (!Number.isNaN(mn) && d[0] > mn) {
+    if (!Number.isNaN(mn) && mn >= 0 && d[0] > mn) {
+      // 0 は受け付ける (0 は意味があるようなので).
+      // https://html.spec.whatwg.org/multipage/embedded-content.html#dom-img-height-dev
       ret[0] = mn
       if (typeof d[1] === 'number') {
         ret[1] = Math.round((d[1] * mn) / d[0])

@@ -239,6 +239,16 @@ describe('rehypeImageSalt rebuild', () => {
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="1200" height="600"></p>'
     )
   })
+  it('should disable data-salt-max-* when pass negative number', async () => {
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="4000" height="2000">{data-salt-max-w="-1"}</p>',
+        { rebuild: { baseAttrs: 'data-salt-max-w="600"' } }
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="4000" height="2000"></p>'
+    )
+  })
   it('should replace query parameter', async () => {
     expect(
       await f(

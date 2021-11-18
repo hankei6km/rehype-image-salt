@@ -108,10 +108,12 @@ describe('trimBaseURL()', () => {
 describe('fitToMax()', () => {
   it('should fit dimension to max-*', async () => {
     expect(fitToMax([4000, 2000], '600')).toEqual([600, 300])
+    expect(fitToMax([4000, 2000], '0')).toEqual([0, 0])
     expect(fitToMax([4000, undefined], '600')).toEqual([600, undefined])
   })
   it('should passthru dimension', async () => {
     expect(fitToMax([4000, 2000], 600)).toEqual([4000, 2000])
+    expect(fitToMax([4000, 2000], -1)).toEqual([4000, 2000])
     expect(fitToMax(['4000', '2000'], 600)).toEqual(['4000', '2000'])
     expect(fitToMax([400, 200], '600')).toEqual([400, 200])
     expect(fitToMax([undefined, 2000], '600')).toEqual([undefined, 2000])

@@ -104,7 +104,7 @@ export const rehypeImageSalt: Plugin<
     const childrenLen = parent.children.length
     const imageIdx = parent.children.findIndex((n) => n === node)
     const image: Element = node as Element
-    let slibingP: [Element, number] | undefined = undefined // block の取得時に算出.
+    let slibingP: [Element, number, number] | undefined = undefined // block の取得時に算出.
 
     if (
       typeof image.properties?.src === 'string' &&
@@ -222,7 +222,7 @@ export const rehypeImageSalt: Plugin<
         const children =
           slibingP === undefined
             ? parent.children
-            : (parents[parentsLen - 2].children[slibingP[1]] as Element)
+            : (parents[parentsLen - 2].children[slibingP[2]] as Element)
                 .children // parent の slibing の paragraph を対象に除去する.
         children.splice(
           resFromBlock.removeRange.startIdx,
@@ -234,10 +234,17 @@ export const rehypeImageSalt: Plugin<
         ) {
           ;(children[resFromBlock.removeRange.endIdx] as Text).value = textValue
         }
-        // slibing の paragraph との間に white space 的な text node が存在していても除去しない.
-        if (children.length === 0 && slibingP) {
-          // slibing の paragraph が空になった場合は除去する(rehype-split-paragraph を使う?)
-          parents[parentsLen - 2].children.splice(slibingP[1], 1)
+        if (slibingP) {
+          if (children.length === 0) {
+            // slibing の paragraph が空になった場合は
+            // paragraph と間の white space 的な text node (存在していたら)を削除する.
+            const removeSlibingStart = slibingP[1]
+            const removeSlibingCount = slibingP[2] - slibingP[1] + 1
+            parents[parentsLen - 2].children.splice(
+              removeSlibingStart,
+              removeSlibingCount
+            )
+          }
         }
       }
       parent.children[imageIdx] = rebuilded

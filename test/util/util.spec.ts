@@ -153,6 +153,7 @@ describe('slibingParagraph()', () => {
         tagName: 'p',
         children: []
       },
+      2,
       2
     ])
     expect(
@@ -174,6 +175,7 @@ describe('slibingParagraph()', () => {
         tagName: 'p',
         children: []
       },
+      2,
       3
     ])
   })

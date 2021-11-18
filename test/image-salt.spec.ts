@@ -98,7 +98,44 @@ describe('rehypeImageSalt rebuild', () => {
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1"></p>\n<p>{class="light-img"}</p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="">{ sizes="sm:100vw md:50vw lg:400px"}</p>'
       )
     ).toEqual(
-      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" class="light-img"></p>\n<h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="" sizes="sm:100vw md:50vw lg:400px"></p>'
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" class="light-img"></p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="" sizes="sm:100vw md:50vw lg:400px"></p>'
+    )
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1"></p>\n<p>{class="light-img"}keep</p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="">{ sizes="sm:100vw md:50vw lg:400px"}</p>'
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" class="light-img"></p>\n<p>keep</p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="" sizes="sm:100vw md:50vw lg:400px"></p>'
+    )
+  })
+  it('should rebuild img tag to anchar with block from slibing paragraph', async () => {
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1"></p><p>{class="light-img" data-salt-thumb}</p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt=""></p><p>{\n &nbsp;style="display:flex;\tjustify-content:center;" sizes="sm:100vw md:50vw lg:400px"}</p>'
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="/path/to/image1.jpg" target="_blank" rel="noopener noreferrer"><img src="/path/to/image1.jpg" alt="image1" class="light-img"></a></p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="" style="display:flex;\tjustify-content:center;" sizes="sm:100vw md:50vw lg:400px"></p>'
+    )
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1"></p><p>{class="light-img" data-salt-thumb}keep</p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt=""></p><p>{\n &nbsp;style="display:flex;\tjustify-content:center;" sizes="sm:100vw md:50vw lg:400px"}</p>'
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="/path/to/image1.jpg" target="_blank" rel="noopener noreferrer"><img src="/path/to/image1.jpg" alt="image1" class="light-img"></a></p><p>keep</p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="" style="display:flex;\tjustify-content:center;" sizes="sm:100vw md:50vw lg:400px"></p>'
+    )
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1"></p>\n<p>{class="light-img" data-salt-thumb}</p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt=""></p><p>{\n &nbsp;style="display:flex;\tjustify-content:center;" sizes="sm:100vw md:50vw lg:400px"}</p>'
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="/path/to/image1.jpg" target="_blank" rel="noopener noreferrer"><img src="/path/to/image1.jpg" alt="image1" class="light-img"></a></p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="" style="display:flex;\tjustify-content:center;" sizes="sm:100vw md:50vw lg:400px"></p>'
+    )
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1"></p>\n<p>{class="light-img" data-salt-thumb}keep</p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt=""></p><p>{\n &nbsp;style="display:flex;\tjustify-content:center;" sizes="sm:100vw md:50vw lg:400px"}</p>'
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="/path/to/image1.jpg" target="_blank" rel="noopener noreferrer"><img src="/path/to/image1.jpg" alt="image1" class="light-img"></a></p>\n<p>keep</p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="" style="display:flex;\tjustify-content:center;" sizes="sm:100vw md:50vw lg:400px"></p>'
     )
   })
   it('should skip decode attributes from slibingp aragrapgh when node is exist bettween image and slibing', async () => {

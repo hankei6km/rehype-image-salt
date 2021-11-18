@@ -89,7 +89,7 @@ export function fitToMax(
 const slibingParagraphTextSkipRegExp = /^[\s]*$/
 export function slibingParagraph(
   parents: Parent[]
-): [Element, number] | undefined {
+): [Element, number, number] | undefined {
   const plen = parents.length
   if (plen > 1) {
     const parent = parents[plen - 1]
@@ -101,7 +101,7 @@ export function slibingParagraph(
       for (let idx = parentIdx + 1; idx < l; idx++) {
         const s = parent2.children[idx]
         if (s.type === 'element' && s.tagName === 'p') {
-          return [s as Element, idx]
+          return [s as Element, parentIdx + 1, idx] // [対象の node, 親の中での親のidx +1 ,対象の idx ]
         } else if (
           s.type === 'text' &&
           s.value.match(slibingParagraphTextSkipRegExp)

@@ -392,6 +392,31 @@ describe('rehypeImageSalt rebuild', () => {
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="/path/to/image1.jpg" target="_blank" rel="noopener noreferrer"><img src="/path/to/image1.jpg?w=300&#x26;h=200" alt="image1"></a></p>'
     )
   })
+  it('should rebuild into anchor tag(http/https)', async () => {
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1{data-salt-thumb=&#x22;https://localhost:3000&#x22;}"></p>'
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="https://localhost:3000" target="_blank" rel="noopener noreferrer"><img src="/path/to/image1.jpg" alt="image1"></a></p>'
+    )
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1{data-salt-thumb=&#x22;http://localhost:3000&#x22;}"></p>'
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="http://localhost:3000" target="_blank" rel="noopener noreferrer"><img src="/path/to/image1.jpg" alt="image1"></a></p>'
+    )
+  })
+  it('should rebuild into anchor tag(path)', async () => {
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1{data-salt-thumb=&#x22;/path/to&#x22;}"></p>'
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="/path/to" target="_blank" rel="noopener noreferrer"><img src="/path/to/image1.jpg" alt="image1"></a></p>'
+    )
+  })
   it('should rebuild into anchor tag(query)', async () => {
     expect(
       await f(

@@ -214,13 +214,18 @@ export const rehypeImageSalt: Plugin<
       }
       let rebuilded: Element = imageTag
       if (linkToURL) {
+        const targetRel = linkToURL.startsWith('/')
+          ? {}
+          : {
+              target: '_blank',
+              rel: 'noopener noreferrer'
+            }
         const linkToTag: Element = {
           type: 'element',
           tagName: 'a',
           properties: {
             href: linkToURL,
-            target: '_blank',
-            rel: 'noopener noreferrer'
+            ...targetRel
           },
           children: [imageTag]
         }

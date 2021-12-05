@@ -114,28 +114,28 @@ describe('rehypeImageSalt rebuild', () => {
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1"></p><p>{class="light-img" data-salt-thumb}</p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt=""></p><p>{\n &nbsp;style="display:flex;\tjustify-content:center;" sizes="sm:100vw md:50vw lg:400px"}</p>'
       )
     ).toEqual(
-      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="/path/to/image1.jpg" target="_blank" rel="noopener noreferrer"><img src="/path/to/image1.jpg" alt="image1" class="light-img"></a></p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="" style="display:flex;\tjustify-content:center;" sizes="sm:100vw md:50vw lg:400px"></p>'
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="/path/to/image1.jpg"><img src="/path/to/image1.jpg" alt="image1" class="light-img"></a></p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="" style="display:flex;\tjustify-content:center;" sizes="sm:100vw md:50vw lg:400px"></p>'
     )
     expect(
       await f(
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1"></p><p>{class="light-img" data-salt-thumb}keep</p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt=""></p><p>{\n &nbsp;style="display:flex;\tjustify-content:center;" sizes="sm:100vw md:50vw lg:400px"}</p>'
       )
     ).toEqual(
-      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="/path/to/image1.jpg" target="_blank" rel="noopener noreferrer"><img src="/path/to/image1.jpg" alt="image1" class="light-img"></a></p><p>keep</p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="" style="display:flex;\tjustify-content:center;" sizes="sm:100vw md:50vw lg:400px"></p>'
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="/path/to/image1.jpg"><img src="/path/to/image1.jpg" alt="image1" class="light-img"></a></p><p>keep</p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="" style="display:flex;\tjustify-content:center;" sizes="sm:100vw md:50vw lg:400px"></p>'
     )
     expect(
       await f(
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1"></p>\n<p>{class="light-img" data-salt-thumb}</p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt=""></p><p>{\n &nbsp;style="display:flex;\tjustify-content:center;" sizes="sm:100vw md:50vw lg:400px"}</p>'
       )
     ).toEqual(
-      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="/path/to/image1.jpg" target="_blank" rel="noopener noreferrer"><img src="/path/to/image1.jpg" alt="image1" class="light-img"></a></p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="" style="display:flex;\tjustify-content:center;" sizes="sm:100vw md:50vw lg:400px"></p>'
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="/path/to/image1.jpg"><img src="/path/to/image1.jpg" alt="image1" class="light-img"></a></p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="" style="display:flex;\tjustify-content:center;" sizes="sm:100vw md:50vw lg:400px"></p>'
     )
     expect(
       await f(
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1"></p>\n<p>{class="light-img" data-salt-thumb}keep</p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt=""></p><p>{\n &nbsp;style="display:flex;\tjustify-content:center;" sizes="sm:100vw md:50vw lg:400px"}</p>'
       )
     ).toEqual(
-      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="/path/to/image1.jpg" target="_blank" rel="noopener noreferrer"><img src="/path/to/image1.jpg" alt="image1" class="light-img"></a></p>\n<p>keep</p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="" style="display:flex;\tjustify-content:center;" sizes="sm:100vw md:50vw lg:400px"></p>'
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="/path/to/image1.jpg"><img src="/path/to/image1.jpg" alt="image1" class="light-img"></a></p>\n<p>keep</p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="" style="display:flex;\tjustify-content:center;" sizes="sm:100vw md:50vw lg:400px"></p>'
     )
   })
   it('should skip decode attributes from slibingp aragrapgh when node is exist bettween image and slibing', async () => {
@@ -389,16 +389,48 @@ describe('rehypeImageSalt rebuild', () => {
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg?w=300&h=200" alt="image1{data-salt-thumb}"></p>'
       )
     ).toEqual(
-      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="/path/to/image1.jpg" target="_blank" rel="noopener noreferrer"><img src="/path/to/image1.jpg?w=300&#x26;h=200" alt="image1"></a></p>'
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="/path/to/image1.jpg"><img src="/path/to/image1.jpg?w=300&#x26;h=200" alt="image1"></a></p>'
+    )
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="http://localhost:3000/path/to/image1.jpg?w=300&h=200" alt="image1{data-salt-thumb}"></p>'
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="http://localhost:3000/path/to/image1.jpg" target="_blank" rel="noopener noreferrer"><img src="http://localhost:3000/path/to/image1.jpg?w=300&#x26;h=200" alt="image1"></a></p>'
+    )
+  })
+  it('should rebuild into anchor tag(http/https)', async () => {
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1{data-salt-thumb=&#x22;https://localhost:3000&#x22;}"></p>'
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="https://localhost:3000" target="_blank" rel="noopener noreferrer"><img src="/path/to/image1.jpg" alt="image1"></a></p>'
+    )
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1{data-salt-thumb=&#x22;http://localhost:3000&#x22;}"></p>'
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="http://localhost:3000" target="_blank" rel="noopener noreferrer"><img src="/path/to/image1.jpg" alt="image1"></a></p>'
+    )
+  })
+  it('should rebuild into anchor tag(path)', async () => {
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="http://localhost:3000/path/to/image1.jpg" alt="image1{data-salt-thumb=&#x22;/path/to&#x22;}"></p>'
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="/path/to"><img src="http://localhost:3000/path/to/image1.jpg" alt="image1"></a></p>'
     )
   })
   it('should rebuild into anchor tag(query)', async () => {
     expect(
       await f(
-        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg?w=300&h=200" alt="image1{data-salt-thumb=&#x22;w=600&#x22;}"></p>'
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="http://localhost:3000/path/to/image1.jpg?w=300&h=200" alt="image1{data-salt-thumb=&#x22;w=600&#x22;}"></p>'
       )
     ).toEqual(
-      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="/path/to/image1.jpg?w=600" target="_blank" rel="noopener noreferrer"><img src="/path/to/image1.jpg?w=300&#x26;h=200" alt="image1"></a></p>'
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="http://localhost:3000/path/to/image1.jpg?w=600" target="_blank" rel="noopener noreferrer"><img src="http://localhost:3000/path/to/image1.jpg?w=300&#x26;h=200" alt="image1"></a></p>'
     )
   })
   it('should skip text node that is not match block', async () => {

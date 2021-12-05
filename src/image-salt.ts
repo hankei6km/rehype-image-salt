@@ -113,7 +113,7 @@ export const rehypeImageSalt: Plugin<
       const imageAlt =
         typeof image.properties?.alt === 'string' ? image.properties?.alt : ''
       let imageURL = image.properties.src
-      let largeImageURL = ''
+      let linkToURL = ''
 
       const resFromAlt = attrsFromAlt(imageAlt)
       let resFromBlock: AttrsResultFromBlock = {}
@@ -166,7 +166,16 @@ export const rehypeImageSalt: Plugin<
           imageURL = editQuery(baseURL, imageURL, `${v}`, false)
           set = false
         } else if (k === customAttrNameThumb) {
-          largeImageURL = editQuery(baseURL, imageURL, `${v}`, true)
+          const thumbOpt = `${v}`
+          if (
+            thumbOpt.startsWith('http://') ||
+            thumbOpt.startsWith('https://') ||
+            thumbOpt.startsWith('/')
+          ) {
+            linkToURL = thumbOpt
+          } else {
+            linkToURL = editQuery(baseURL, imageURL, `${v}`, true)
+          }
           set = false
         }
         if (set) {
@@ -204,18 +213,23 @@ export const rehypeImageSalt: Plugin<
         children: []
       }
       let rebuilded: Element = imageTag
-      if (largeImageURL) {
-        const largeImageTag: Element = {
+      if (linkToURL) {
+        const targetRel = linkToURL.startsWith('/')
+          ? {}
+          : {
+              target: '_blank',
+              rel: 'noopener noreferrer'
+            }
+        const linkToTag: Element = {
           type: 'element',
           tagName: 'a',
           properties: {
-            href: largeImageURL,
-            target: '_blank',
-            rel: 'noopener noreferrer'
+            href: linkToURL,
+            ...targetRel
           },
           children: [imageTag]
         }
-        rebuilded = largeImageTag
+        rebuilded = linkToTag
       }
       if (resFromBlock.removeRange) {
         const textValue = resFromBlock.removeRange.keepText

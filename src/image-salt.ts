@@ -273,8 +273,10 @@ export const rehypeImageSalt: Plugin<
   ) => {
     const parentsLen = parents.length
     const parent: Parent = parents[parentsLen - 1]
+    const childrenLen = parent.children.length
     const imageIdx = parent.children.findIndex((n) => n === node)
     const image: Element = node as Element
+    let slibingP: [Element, number, number] | undefined = undefined // block の取得時に算出.
 
     if (
       typeof image.properties?.src === 'string' &&
@@ -285,7 +287,16 @@ export const rehypeImageSalt: Plugin<
       const imageProperties = image.properties || {}
 
       const resFromAlt = attrsFromAlt(imageAlt)
-      const resFromBlock = attrsFromBlock(parent.children, imageIdx + 1)
+      let resFromBlock: AttrsResultFromBlock = {}
+      if (imageIdx === childrenLen - 1) {
+        // image が末尾のときは slibing の paragraph を利用.
+        slibingP = slibingParagraph(parents)
+        if (slibingP) {
+          resFromBlock = attrsFromBlock(slibingP[0].children, 0)
+        }
+      } else {
+        resFromBlock = attrsFromBlock(parent.children, imageIdx + 1)
+      }
       const workProperties: Properties = {}
       Object.assign(
         workProperties,
@@ -325,16 +336,32 @@ export const rehypeImageSalt: Plugin<
 
       if (resFromBlock.removeRange) {
         const textValue = resFromBlock.removeRange.keepText
-        parent.children.splice(
+        const children =
+          slibingP === undefined
+            ? parent.children
+            : (parents[parentsLen - 2].children[slibingP[2]] as Element)
+                .children // parent の slibing の paragraph を対象に除去する.
+        children.splice(
           resFromBlock.removeRange.startIdx,
           resFromBlock.removeRange.count
         )
         if (
           textValue &&
-          parent.children[resFromBlock.removeRange.endIdx].type === 'text' // 念のため.
+          children[resFromBlock.removeRange.endIdx].type === 'text' // 念のため.
         ) {
-          ;(parent.children[resFromBlock.removeRange.endIdx] as Text).value =
-            textValue
+          ;(children[resFromBlock.removeRange.endIdx] as Text).value = textValue
+        }
+        if (slibingP) {
+          if (children.length === 0) {
+            // slibing の paragraph が空になった場合は
+            // paragraph と間の white space 的な text node (存在していたら)を削除する.
+            const removeSlibingStart = slibingP[1]
+            const removeSlibingCount = slibingP[2] - slibingP[1] + 1
+            parents[parentsLen - 2].children.splice(
+              removeSlibingStart,
+              removeSlibingCount
+            )
+          }
         }
       }
       parent.children.splice(imageIdx, 1, ...rebuilded)

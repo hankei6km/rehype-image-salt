@@ -554,6 +554,17 @@ describe('rehypeImageSalt embed', () => {
     ).toEqual(
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1{height=&#x22;400&#x22; width=&#x22;300&#x22; class=&#x22;light-img&#x22;}" width="300" height="200" class="light-img"></p>'
     )
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="300" height="200" class="light-img"></p><p>{height="400"}</p><p>text1</p>',
+        {
+          command: 'embed',
+          embed: { pickAttrs: ['width', 'class'] }
+        }
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1{height=&#x22;400&#x22; width=&#x22;300&#x22; class=&#x22;light-img&#x22;}" width="300" height="200" class="light-img"></p><p>text1</p>'
+    )
   })
   it('should merge attrs to embedded attrs then embed to block', async () => {
     expect(
@@ -566,6 +577,17 @@ describe('rehypeImageSalt embed', () => {
       )
     ).toEqual(
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="300" height="200" class="light-img">{height="400" width="300" class="light-img"}</p>'
+    )
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="300" height="200" class="light-img"></p><p>{height="400"}</p><p>text1</p>',
+        {
+          command: 'embed',
+          embed: { embedTo: 'block', pickAttrs: ['width', 'class'] }
+        }
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="300" height="200" class="light-img">{height="400" width="300" class="light-img"}</p><p>text1</p>'
     )
   })
   it('should protect embedded attrs', async () => {

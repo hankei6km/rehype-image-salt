@@ -19,6 +19,7 @@ import {
   customAttrName,
   fitToMax,
   normalizeOpts,
+  removeBlock,
   slibingParagraph,
   trimBaseURL
 } from './util/util.js'
@@ -101,10 +102,8 @@ export const rehypeImageSalt: Plugin<
   ) => {
     const parentsLen = parents.length
     const parent: Parent = parents[parentsLen - 1]
-    const childrenLen = parent.children.length
     const imageIdx = parent.children.findIndex((n) => n === node)
     const image: Element = node as Element
-    let slibingP: [Element, number, number] | undefined = undefined // block の取得時に算出.
 
     if (
       typeof image.properties?.src === 'string' &&
@@ -116,16 +115,11 @@ export const rehypeImageSalt: Plugin<
       let linkToURL = ''
 
       const resFromAlt = attrsFromAlt(imageAlt)
-      let resFromBlock: AttrsResultFromBlock = {}
-      if (imageIdx === childrenLen - 1) {
-        // image が末尾のときは slibing の paragraph を利用.
-        slibingP = slibingParagraph(parents)
-        if (slibingP) {
-          resFromBlock = attrsFromBlock(slibingP[0].children, 0)
-        }
-      } else {
-        resFromBlock = attrsFromBlock(parent.children, imageIdx + 1)
-      }
+      const resFromBlock = attrsFromBlock(
+        parents,
+        parent.children,
+        imageIdx + 1
+      )
       // const workProperties: Properties = {}
       // Object.assign(
       //   workProperties,
@@ -231,37 +225,12 @@ export const rehypeImageSalt: Plugin<
         }
         rebuilded = linkToTag
       }
-      if (resFromBlock.removeRange) {
-        const textValue = resFromBlock.removeRange.keepText
-        const children =
-          slibingP === undefined
-            ? parent.children
-            : (parents[parentsLen - 2].children[slibingP[2]] as Element)
-                .children // parent の slibing の paragraph を対象に除去する.
-        children.splice(
-          resFromBlock.removeRange.startIdx,
-          resFromBlock.removeRange.count
-        )
-        if (
-          textValue &&
-          children[resFromBlock.removeRange.endIdx].type === 'text' // 念のため.
-        ) {
-          ;(children[resFromBlock.removeRange.endIdx] as Text).value = textValue
-        }
-        if (slibingP) {
-          if (children.length === 0) {
-            // slibing の paragraph が空になった場合は
-            // paragraph と間の white space 的な text node (存在していたら)を削除する.
-            const removeSlibingStart = slibingP[1]
-            const removeSlibingCount = slibingP[2] - slibingP[1] + 1
-            parents[parentsLen - 2].children.splice(
-              removeSlibingStart,
-              removeSlibingCount
-            )
-          }
-        }
-      }
+      // block を取り除く.
+      removeBlock(parents, parent, imageIdx, resFromBlock)
+
+      // 再構築された image へ置き換える.
       parent.children[imageIdx] = rebuilded
+
       return SKIP // サムネイル化で <a> の children になるので.
     }
   }
@@ -273,10 +242,8 @@ export const rehypeImageSalt: Plugin<
   ) => {
     const parentsLen = parents.length
     const parent: Parent = parents[parentsLen - 1]
-    const childrenLen = parent.children.length
     const imageIdx = parent.children.findIndex((n) => n === node)
     const image: Element = node as Element
-    let slibingP: [Element, number, number] | undefined = undefined // block の取得時に算出.
 
     if (
       typeof image.properties?.src === 'string' &&
@@ -287,16 +254,11 @@ export const rehypeImageSalt: Plugin<
       const imageProperties = image.properties || {}
 
       const resFromAlt = attrsFromAlt(imageAlt)
-      let resFromBlock: AttrsResultFromBlock = {}
-      if (imageIdx === childrenLen - 1) {
-        // image が末尾のときは slibing の paragraph を利用.
-        slibingP = slibingParagraph(parents)
-        if (slibingP) {
-          resFromBlock = attrsFromBlock(slibingP[0].children, 0)
-        }
-      } else {
-        resFromBlock = attrsFromBlock(parent.children, imageIdx + 1)
-      }
+      const resFromBlock = attrsFromBlock(
+        parents,
+        parent.children,
+        imageIdx + 1
+      )
       const workProperties: Properties = {}
       Object.assign(
         workProperties,
@@ -333,37 +295,12 @@ export const rehypeImageSalt: Plugin<
           })
         }
       }
+      // block を取り除く
+      // (block の attrs は新しい要素に埋め込まれた状態になっているので、
+      // ソースは削除する).
+      removeBlock(parents, parent, imageIdx, resFromBlock)
 
-      if (resFromBlock.removeRange) {
-        const textValue = resFromBlock.removeRange.keepText
-        const children =
-          slibingP === undefined
-            ? parent.children
-            : (parents[parentsLen - 2].children[slibingP[2]] as Element)
-                .children // parent の slibing の paragraph を対象に除去する.
-        children.splice(
-          resFromBlock.removeRange.startIdx,
-          resFromBlock.removeRange.count
-        )
-        if (
-          textValue &&
-          children[resFromBlock.removeRange.endIdx].type === 'text' // 念のため.
-        ) {
-          ;(children[resFromBlock.removeRange.endIdx] as Text).value = textValue
-        }
-        if (slibingP) {
-          if (children.length === 0) {
-            // slibing の paragraph が空になった場合は
-            // paragraph と間の white space 的な text node (存在していたら)を削除する.
-            const removeSlibingStart = slibingP[1]
-            const removeSlibingCount = slibingP[2] - slibingP[1] + 1
-            parents[parentsLen - 2].children.splice(
-              removeSlibingStart,
-              removeSlibingCount
-            )
-          }
-        }
-      }
+      // 埋め込まれた image へ置き換える.
       parent.children.splice(imageIdx, 1, ...rebuilded)
       return
     }

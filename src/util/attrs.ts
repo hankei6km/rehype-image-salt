@@ -1,9 +1,10 @@
 import parse5 from 'parse5'
 import { fromParse5 } from 'hast-util-from-parse5'
-import { Element, Properties, Text } from 'hast'
+import { Element, Parent, Properties, Text } from 'hast'
 import { Node } from 'unist'
 import { toHtml } from 'hast-util-to-html'
 import { encodeQuery, toModifiers } from './query.js'
+import { slibingParagraph } from './util.js'
 
 // const fenceStart = '##'
 // const fenceEnd = '##'
@@ -29,13 +30,16 @@ export type AttrsResultFromAlt = {
   properties?: Properties
 }
 
+type AttrsResultFromBlockBy = 'text' | 'following' | 'slibing' | 'none'
 export type AttrsResultFromBlock = {
+  blockBy: AttrsResultFromBlockBy
   removeRange?: {
     startIdx: number
     endIdx: number
     keepText: string
     count: number
   }
+  slibingP?: [Element, number, number]
   properties?: Properties
 }
 
@@ -253,22 +257,66 @@ export function attrsFromAlt(alt: string): AttrsResultFromAlt {
 }
 
 export function attrsFromBlock(
+  parents: Parent[],
   children: Node[],
   startIdx: number
 ): AttrsResultFromBlock {
   try {
     const ret: AttrsResultFromBlock = {
+      blockBy: 'none',
       properties: {}
     }
+    const childrenLen = children.length
+    const following: Element = children[startIdx] as Element
 
-    const b = extractAttrsFromBlock(children, startIdx)
-    if (b.extracted) {
-      Object.assign(ret.properties, decodeAttrs(b.attrs))
-      ret.removeRange = {
-        startIdx: b.range[0],
-        endIdx: b.range[1],
-        keepText: b.range[2], // 末尾の node に残す text
-        count: b.range[1] - b.range[0] + (b.range[2] ? 0 : 1)
+    if (startIdx >= childrenLen) {
+      // 末尾のときは slibing の paragraph を利用.
+      const slibingP = slibingParagraph(parents)
+      if (slibingP) {
+        const b = extractAttrsFromBlock(slibingP[0].children, 0)
+        if (b.extracted) {
+          // 取り出した後の処理は 'slibing' 'following' 'text' どれもだいたい同じ、
+          // まとめられない?
+          ret.blockBy = 'slibing'
+          Object.assign(ret.properties, decodeAttrs(b.attrs))
+          ret.removeRange = {
+            startIdx: b.range[0],
+            endIdx: b.range[1],
+            keepText: b.range[2], // 末尾の node に残す text
+            count: b.range[1] - b.range[0] + (b.range[2] ? 0 : 1)
+          }
+          ret.slibingP = slibingP
+        }
+      }
+    } else if (
+      following &&
+      following.type === 'element' &&
+      following.tagName === 'p'
+    ) {
+      // 直後が paragrah だったのでそこから取り出す.
+      // 開始位置は paragraph 基準で 0.
+      const b = extractAttrsFromBlock(following.children, 0)
+      if (b.extracted) {
+        ret.blockBy = 'following'
+        Object.assign(ret.properties, decodeAttrs(b.attrs))
+        ret.removeRange = {
+          startIdx: b.range[0],
+          endIdx: b.range[1],
+          keepText: b.range[2], // 末尾の node に残す text
+          count: b.range[1] - b.range[0] + (b.range[2] ? 0 : 1)
+        }
+      }
+    } else {
+      const b = extractAttrsFromBlock(children, startIdx)
+      if (b.extracted) {
+        ret.blockBy = 'text'
+        Object.assign(ret.properties, decodeAttrs(b.attrs))
+        ret.removeRange = {
+          startIdx: b.range[0],
+          endIdx: b.range[1],
+          keepText: b.range[2], // 末尾の node に残す text
+          count: b.range[1] - b.range[0] + (b.range[2] ? 0 : 1)
+        }
       }
     }
     return ret

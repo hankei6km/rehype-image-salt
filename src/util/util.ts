@@ -1,11 +1,11 @@
 import { camelCase } from 'camel-case'
-import { Element, Parent, Properties } from 'hast'
+import { Element, Parent, Properties, Text } from 'hast'
 import {
   defaultOpts,
   RehypeImageSaltOptions,
   RehypeImageSaltOptionsNormalized
 } from '../image-salt.js'
-import { decodeAttrs } from './attrs.js'
+import { AttrsResultFromBlock, decodeAttrs } from './attrs.js'
 
 function _normalizeOpts(
   opts: RehypeImageSaltOptions
@@ -115,4 +115,56 @@ export function slibingParagraph(
     }
   }
   return undefined
+}
+
+export function removeBlock(
+  parents: Parent[],
+  parent: Parent,
+  imageIdx: number,
+  resFromBlock: AttrsResultFromBlock
+) {
+  if (resFromBlock.removeRange) {
+    const parentsLen = parents.length
+    const textValue = resFromBlock.removeRange.keepText
+    const children =
+      resFromBlock.blockBy === 'slibing'
+        ? (
+            parents[parentsLen - 2].children[
+              resFromBlock.slibingP![2] // blockBy が slibing なら undefined はない.
+            ] as Element
+          ).children // parent の slibing の paragraph を対象に除去する.
+        : resFromBlock.blockBy === 'following'
+        ? (parent.children[imageIdx + 1] as Element).children
+        : parent.children
+    children.splice(
+      resFromBlock.removeRange.startIdx,
+      resFromBlock.removeRange.count
+    )
+    if (
+      textValue &&
+      children[resFromBlock.removeRange.endIdx].type === 'text' // 念のため.
+    ) {
+      ;(children[resFromBlock.removeRange.endIdx] as Text).value = textValue
+    }
+    // paragrah が空になっていたら取り除く.
+    if (resFromBlock.blockBy === 'slibing') {
+      if (children.length === 0) {
+        // slibing の paragraph が空になった場合は
+        // paragraph と間の white space 的な text node (存在していたら)を削除する.
+        const removeSlibingStart = resFromBlock.slibingP![1]
+        const removeSlibingCount =
+          resFromBlock.slibingP![2] - resFromBlock.slibingP![1] + 1
+        parents[parentsLen - 2].children.splice(
+          removeSlibingStart,
+          removeSlibingCount
+        )
+      }
+    } else if (resFromBlock.blockBy === 'following') {
+      if (children.length === 0) {
+        // following の paragraph が空になった場合は
+        // paragraph と間のはなにも存在しないので単純に paragraph のみを取り除く.
+        parent.children.splice(imageIdx + 1, 1)
+      }
+    }
+  }
 }

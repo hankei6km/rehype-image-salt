@@ -62,6 +62,22 @@ describe('rehypeImageSalt rebuild', () => {
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" class="light-img"></p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="" style="display:flex;\tjustify-content:center;" sizes="sm:100vw md:50vw lg:400px"></p>'
     )
   })
+  it('should rebuild img tag with attrs from block in following paragraph', async () => {
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><img src="/path/to/image1.jpg" alt="image1"><p>{class="light-img"}</p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="">{ sizes="sm:100vw md:50vw lg:400px"}</p>'
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><img src="/path/to/image1.jpg" alt="image1" class="light-img"><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="" sizes="sm:100vw md:50vw lg:400px"></p>'
+    )
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><img src="/path/to/image1.jpg" alt="image1"><p>{class="light-img"}<br>text</p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="">{ sizes="sm:100vw md:50vw lg:400px"}</p>'
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><img src="/path/to/image1.jpg" alt="image1" class="light-img"><p><br>text</p><h2>test2</h2><p>image-salt-2</p><p><img src="/path/to/image2.jpg" alt="" sizes="sm:100vw md:50vw lg:400px"></p>'
+    )
+  })
   it('should rebuild img tag with attrs from block in slibing paragraph', async () => {
     expect(
       await f(
@@ -556,6 +572,17 @@ describe('rehypeImageSalt embed', () => {
     )
     expect(
       await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><img src="/path/to/image1.jpg" alt="image1" width="300" height="200" class="light-img"><p>{height="400"}text</p>',
+        {
+          command: 'embed',
+          embed: { pickAttrs: ['width', 'class'] }
+        }
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><img src="/path/to/image1.jpg" alt="image1{height=&#x22;400&#x22; width=&#x22;300&#x22; class=&#x22;light-img&#x22;}" width="300" height="200" class="light-img"><p>text</p>'
+    )
+    expect(
+      await f(
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="300" height="200" class="light-img"></p><p>{height="400"}</p><p>text1</p>',
         {
           command: 'embed',
@@ -577,6 +604,17 @@ describe('rehypeImageSalt embed', () => {
       )
     ).toEqual(
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" width="300" height="200" class="light-img">{height="400" width="300" class="light-img"}</p>'
+    )
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><img src="/path/to/image1.jpg" alt="image1" width="300" height="200" class="light-img"><p>{height="400"}text</p>',
+        {
+          command: 'embed',
+          embed: { embedTo: 'block', pickAttrs: ['width', 'class'] }
+        }
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><img src="/path/to/image1.jpg" alt="image1" width="300" height="200" class="light-img">{height="400" width="300" class="light-img"}<p>text</p>'
     )
     expect(
       await f(

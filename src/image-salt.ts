@@ -122,7 +122,7 @@ export const rehypeImageSalt: Plugin<
         typeof image.properties?.alt === 'string' ? image.properties?.alt : ''
       let imageURL = image.properties.src
       let linkToURL = ''
-      let captionText: Text | undefined = undefined
+      let captionTag: Element | undefined = undefined
 
       const resFromAlt = attrsFromAlt(imageAlt)
       const resFromBlock = attrsFromBlock(
@@ -182,9 +182,15 @@ export const rehypeImageSalt: Plugin<
           }
           set = false
         } else if (k === customAttrNameZennCaption) {
-          captionText = {
-            type: 'text',
-            value: `*${v}*`
+          captionTag = {
+            type: 'element',
+            tagName: 'em', // Markdown へ変換されたときに `*` になることを期待している.
+            children: [
+              {
+                type: 'text',
+                value: `${v}`
+              }
+            ]
           }
           set = false
         }
@@ -222,8 +228,8 @@ export const rehypeImageSalt: Plugin<
         },
         children: []
       }
-      let rebuilded: Element[] = captionText
-        ? [imageTag, captionText]
+      let rebuilded: Element[] = captionTag
+        ? [imageTag, captionTag]
         : [imageTag]
       if (linkToURL) {
         const targetRel = linkToURL.startsWith('/')
@@ -233,7 +239,7 @@ export const rehypeImageSalt: Plugin<
               rel: 'noopener noreferrer'
             }
         // caption はリンクの中で兄弟ノードとする.
-        const children = captionText ? [imageTag, captionText] : [imageTag]
+        const children = captionTag ? [imageTag, captionTag] : [imageTag]
         const linkToTag: Element = {
           type: 'element',
           tagName: 'a',

@@ -297,13 +297,26 @@ describe('rehypeImageSalt rebuild', () => {
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg?w=300&#x26;blur=100" alt="image1"></p>'
     )
   })
-  it('should trim baseURL', async () => {
+  it('should keep baseURL(default)', async () => {
     expect(
       await f(
         '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1{class=&#x22;light-img&#x22;}"></p>',
         {
           baseURL: 'https://localhost:3000/',
           rebuild: {}
+        }
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1" class="light-img"></p>'
+    )
+  })
+  it('should trim baseURL', async () => {
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1{class=&#x22;light-img&#x22;}"></p>',
+        {
+          baseURL: 'https://localhost:3000/',
+          rebuild: { keepBaseURL: false }
         }
       )
     ).toEqual(
@@ -320,7 +333,7 @@ describe('rehypeImageSalt rebuild', () => {
         }
       )
     ).toEqual(
-      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="/path/to/image1.jpg" alt="image1" class="light-img"></p><h2>test2</h2><p>image-salt-2</p><p><img src="https://localhost:3001/path/to/image2.jpg" alt="image2{class=&#x22;light-img&#x22;}"></p>'
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1" class="light-img"></p><h2>test2</h2><p>image-salt-2</p><p><img src="https://localhost:3001/path/to/image2.jpg" alt="image2{class=&#x22;light-img&#x22;}"></p>'
     )
   })
   it('should keep baseURL', async () => {

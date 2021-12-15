@@ -81,7 +81,7 @@ describe('cli()', () => {
     expect(outData).toMatchSnapshot()
     expect(errData).toEqual('')
   })
-  it('should keep baseURL', async () => {
+  it('should trim baseURL', async () => {
     let outData = ''
     io.stdout.on('data', (d) => (outData = outData + d))
     let errData = ''
@@ -98,7 +98,33 @@ describe('cli()', () => {
         ...io,
         baseURL: 'https://localhost:3000/',
         rebuild: {
-          keepBaseURL: true
+          keepBaseURL: false
+        },
+        embed: {}
+      })
+    ).toEqual(0)
+    expect(outData).toMatchSnapshot()
+    expect(errData).toEqual('')
+  })
+  it('should rebuild to nuxt-img', async () => {
+    let outData = ''
+    io.stdout.on('data', (d) => (outData = outData + d))
+    let errData = ''
+    io.stderr.on('data', (d) => (errData = errData + d))
+    process.nextTick(() => {
+      io.stdin.write(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="https://localhost:3000/path/to/image1.jpg" alt="image1{class=&#x22;light-img&#x22;}"></p>'
+      )
+      io.stdin.end()
+    })
+
+    expect(
+      await cli({
+        ...io,
+        baseURL: 'https://localhost:3000/',
+        rebuild: {
+          tagName: 'nuxt-img',
+          baseAttrs: 'provider="imgix"'
         },
         embed: {}
       })

@@ -462,6 +462,52 @@ describe('rehypeImageSalt rebuild', () => {
       '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="http://localhost:3000/path/to/image1.jpg?w=600" target="_blank" rel="noopener noreferrer"><img src="http://localhost:3000/path/to/image1.jpg?w=300&#x26;h=200" alt="image1"></a></p>'
     )
   })
+  it('should rebuild with Zenn caption', async () => {
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="http://localhost:3000/path/to/image1.jpg?w=300&h=200" alt="image1{data-salt-zenn-cap=&#x22;caption&#x22;}"></p>'
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="http://localhost:3000/path/to/image1.jpg?w=300&#x26;h=200" alt="image1">*caption*</p>'
+    )
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="http://localhost:3000/path/to/image1.jpg?w=300&h=200" alt="image1">{data-salt-zenn-cap="caption"}</p>'
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="http://localhost:3000/path/to/image1.jpg?w=300&#x26;h=200" alt="image1">*caption*</p>'
+    )
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="http://localhost:3000/path/to/image1.jpg?w=300&h=200" alt="image1"></p><p>{data-salt-zenn-cap="caption"}</p>'
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="http://localhost:3000/path/to/image1.jpg?w=300&#x26;h=200" alt="image1">*caption*</p>'
+    )
+  })
+  it('should rebuild into anchor with Zenn caption', async () => {
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="http://localhost:3000/path/to/image1.jpg?w=300&h=200" alt="image1{data-salt-thumb data-salt-zenn-cap=&#x22;caption&#x22;}"></p>'
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="http://localhost:3000/path/to/image1.jpg" target="_blank" rel="noopener noreferrer"><img src="http://localhost:3000/path/to/image1.jpg?w=300&#x26;h=200" alt="image1">*caption*</a></p>'
+    )
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="http://localhost:3000/path/to/image1.jpg?w=300&h=200" alt="image1">{data-salt-thumb data-salt-zenn-cap="caption"}</p>'
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="http://localhost:3000/path/to/image1.jpg" target="_blank" rel="noopener noreferrer"><img src="http://localhost:3000/path/to/image1.jpg?w=300&#x26;h=200" alt="image1">*caption*</a></p>'
+    )
+    expect(
+      await f(
+        '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src="http://localhost:3000/path/to/image1.jpg?w=300&h=200" alt="image1"></p><p>{data-salt-thumb data-salt-zenn-cap="caption"}</p>'
+      )
+    ).toEqual(
+      '<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><a href="http://localhost:3000/path/to/image1.jpg" target="_blank" rel="noopener noreferrer"><img src="http://localhost:3000/path/to/image1.jpg?w=300&#x26;h=200" alt="image1">*caption*</a></p>'
+    )
+  })
   it('should skip text node that is not match block', async () => {
     expect(
       await f(

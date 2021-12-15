@@ -32,6 +32,7 @@ const customAttrNameMaxHeight = customAttrName(customAttrPrefix, 'max-h')
 const customAttrNameQueryForce = customAttrName(customAttrPrefix, 'q')
 const customAttrNameQueryMerge = customAttrName(customAttrPrefix, 'qm')
 const customAttrNameThumb = customAttrName(customAttrPrefix, 'thumb')
+const customAttrNameZennCaption = customAttrName(customAttrPrefix, 'zenn-cap')
 
 const targetTagName = 'img'
 type RehypeImageSaltOptionsRebuild = {
@@ -121,6 +122,7 @@ export const rehypeImageSalt: Plugin<
         typeof image.properties?.alt === 'string' ? image.properties?.alt : ''
       let imageURL = image.properties.src
       let linkToURL = ''
+      let captionText: Text | undefined = undefined
 
       const resFromAlt = attrsFromAlt(imageAlt)
       const resFromBlock = attrsFromBlock(
@@ -179,6 +181,12 @@ export const rehypeImageSalt: Plugin<
             linkToURL = editQuery(baseURL, imageURL, `${v}`, true)
           }
           set = false
+        } else if (k === customAttrNameZennCaption) {
+          captionText = {
+            type: 'text',
+            value: `*${v}*`
+          }
+          set = false
         }
         if (set) {
           properties[key] = value
@@ -214,7 +222,9 @@ export const rehypeImageSalt: Plugin<
         },
         children: []
       }
-      let rebuilded: Element = imageTag
+      let rebuilded: Element[] = captionText
+        ? [imageTag, captionText]
+        : [imageTag]
       if (linkToURL) {
         const targetRel = linkToURL.startsWith('/')
           ? {}
@@ -222,6 +232,8 @@ export const rehypeImageSalt: Plugin<
               target: '_blank',
               rel: 'noopener noreferrer'
             }
+        // caption はリンクの中で兄弟ノードとする.
+        const children = captionText ? [imageTag, captionText] : [imageTag]
         const linkToTag: Element = {
           type: 'element',
           tagName: 'a',
@@ -229,15 +241,16 @@ export const rehypeImageSalt: Plugin<
             href: linkToURL,
             ...targetRel
           },
-          children: [imageTag]
+          children
         }
-        rebuilded = linkToTag
+        rebuilded = [linkToTag]
       }
       // block を取り除く.
       removeBlock(parents, parent, imageIdx, resFromBlock)
 
       // 再構築された image へ置き換える.
-      parent.children[imageIdx] = rebuilded
+      parent.children.splice(imageIdx, 1, ...rebuilded)
+      // parent.children[imageIdx] = rebuilded[0]
 
       return SKIP // サムネイル化で <a> の children になるので.
     }

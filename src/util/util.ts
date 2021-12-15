@@ -2,6 +2,9 @@ import { camelCase } from 'camel-case'
 import { Element, Parent, Properties, Text } from 'hast'
 import {
   defaultOpts,
+  defaultOptsKeepBaseURL,
+  defaultOptsKeepBaseURLByTagName,
+  defaultTrimBaseURLTagNames,
   RehypeImageSaltOptions,
   RehypeImageSaltOptionsNormalized
 } from '../image-salt.js'
@@ -10,6 +13,10 @@ import { AttrsResultFromBlock, decodeAttrs } from './attrs.js'
 function _normalizeOpts(
   opts: RehypeImageSaltOptions
 ): RehypeImageSaltOptionsNormalized {
+  const tagName =
+    opts.rebuild?.tagName !== undefined
+      ? opts.rebuild.tagName
+      : defaultOpts.rebuild.tagName
   const baseAttrs =
     opts.rebuild?.baseAttrs !== undefined
       ? opts.rebuild.baseAttrs
@@ -18,14 +25,13 @@ function _normalizeOpts(
     command: opts.command !== undefined ? opts.command : defaultOpts.command,
     baseURL: opts.baseURL !== undefined ? opts.baseURL : defaultOpts.baseURL,
     rebuild: {
-      tagName:
-        opts.rebuild?.tagName !== undefined
-          ? opts.rebuild.tagName
-          : defaultOpts.rebuild.tagName,
+      tagName,
       keepBaseURL:
         opts.rebuild?.keepBaseURL !== undefined
           ? opts.rebuild.keepBaseURL
-          : defaultOpts.rebuild.keepBaseURL,
+          : defaultTrimBaseURLTagNames.findIndex((v) => v === tagName) >= 0 // tagName により default 値を切り替える.
+          ? defaultOptsKeepBaseURLByTagName
+          : defaultOptsKeepBaseURL,
       baseAttrs,
       baseProperties: baseAttrs ? decodeAttrs(baseAttrs) : {}
     },

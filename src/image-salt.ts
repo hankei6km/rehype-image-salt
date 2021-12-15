@@ -59,6 +59,14 @@ export type RehypeImageSaltOptionsNormalized =
     embed: Required<RehypeImageSaltOptionsEmbed>
   }
 
+export const defaultTrimBaseURLTagNames = [
+  'nuxt-img',
+  'NuxtImg',
+  'nuxt-picgure',
+  'NuxtPicture'
+]
+export const defaultOptsKeepBaseURL = true
+export const defaultOptsKeepBaseURLByTagName = false
 export const defaultOpts: Required<RehypeImageSaltOptions> & {
   rebuild: Required<RehypeImageSaltOptionsRebuild>
   embed: Required<RehypeImageSaltOptionsEmbed>
@@ -67,7 +75,7 @@ export const defaultOpts: Required<RehypeImageSaltOptions> & {
   baseURL: '',
   rebuild: {
     tagName: targetTagName,
-    keepBaseURL: false,
+    keepBaseURL: defaultOptsKeepBaseURL, // tagName で切り替わる(切り替えは _normalizeOpts で実施).
     baseAttrs: ''
   },
   embed: {

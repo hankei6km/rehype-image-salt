@@ -2,7 +2,7 @@
 
 exports[`cli() should apply baseAttrs 1`] = `"<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src=\\"https://localhost:3000/path/to/image1.jpg\\" alt=\\"image1\\" provider=\\"imgix\\" class=\\"rounded dark-img\\" :modifiers=\\"{&#x22;blur&#x22;:&#x22;100&#x22;}\\"></p>"`;
 
-exports[`cli() should keep baseURL 1`] = `"<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src=\\"https://localhost:3000/path/to/image1.jpg\\" alt=\\"image1\\" class=\\"light-img\\"></p>"`;
+exports[`cli() should rebuild to nuxt-img 1`] = `"<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><nuxt-img src=\\"/path/to/image1.jpg\\" alt=\\"image1\\" provider=\\"imgix\\" class=\\"light-img\\"></nuxt-img></p>"`;
 
 exports[`cli() should return stderr with exitcode=1 1`] = `
 "Error: attrsFromAlt: Error: extractAttrs: invalid attrs has injected
@@ -15,4 +15,6 @@ exports[`cli() should return stdout from rebuild command with exitcode=0 (block 
 
 exports[`cli() should return stdout from rebuild command with exitcode=0 1`] = `"<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src=\\"/path/to/image1.jpg\\" alt=\\"image1\\" class=\\"light-img\\"></p><h2>test2</h2><p>image-salt-2</p><p><img src=\\"/path/to/image2.jpg\\" alt=\\"\\" sizes=\\"sm:100vw md:50vw lg:400px\\"></p>"`;
 
-exports[`cli() should skip url was not matched baseURL 1`] = `"<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src=\\"/path/to/image1.jpg\\" alt=\\"image1\\" class=\\"light-img\\"></p><h2>test2</h2><p>image-salt-2</p><p><img src=\\"https://localhost:3001/path/to/image2.jpg\\" alt=\\"image2{class=&#x22;light-img&#x22;}\\"></p>"`;
+exports[`cli() should skip url was not matched baseURL 1`] = `"<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src=\\"https://localhost:3000/path/to/image1.jpg\\" alt=\\"image1\\" class=\\"light-img\\"></p><h2>test2</h2><p>image-salt-2</p><p><img src=\\"https://localhost:3001/path/to/image2.jpg\\" alt=\\"image2{class=&#x22;light-img&#x22;}\\"></p>"`;
+
+exports[`cli() should trim baseURL 1`] = `"<h1>test</h1><h2>test1</h2><p>image-salt-1</p><p><img src=\\"/path/to/image1.jpg\\" alt=\\"image1\\" class=\\"light-img\\"></p>"`;

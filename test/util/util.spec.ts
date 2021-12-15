@@ -2,7 +2,10 @@ import parse5 from 'parse5'
 import { fromParse5 } from 'hast-util-from-parse5'
 import { Node } from 'unist'
 import { Element, Parent, Root } from 'hast'
-import { defaultOpts } from '../../src/image-salt.js'
+import {
+  defaultOpts,
+  defaultOptsKeepBaseURLByTagName
+} from '../../src/image-salt.js'
 import {
   customAttrName,
   fitToMax,
@@ -48,6 +51,7 @@ describe('normalizeOpts()', () => {
         rebuild: {
           ...defaultOpts.rebuild,
           tagName: 'nuxt-img',
+          keepBaseURL: defaultOptsKeepBaseURLByTagName,
           baseProperties: {}
         }
       }
